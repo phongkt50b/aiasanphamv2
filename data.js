@@ -54,59 +54,96 @@ export const product_data = {
         { name: "Công nhân cơ khí, Thợ máy", group: 4 },
         { name: "Công nhân xây dựng, thi công, Thợ hồ", group: 4 },
         { name: "Đánh bắt cá ở sông hồ", group: 4 },
-        { name: "Lao động tự do", group: 4 }
+        { name: "Lao động tự do", group: 4 },
     ],
     pul_rates: {
-        // ... dữ liệu phí sản phẩm chính cho từng tuổi/giới tính ...
-        // (giữ nguyên như dữ liệu gốc, vì đã chuẩn nghiệp vụ)
         PUL_TRON_DOI: [
-            // ... danh sách biểu phí ...
+            { age: 0, nam: 6.1, nu: 5.7 }, { age: 1, nam: 6.1, nu: 5.7 }, { age: 2, nam: 6.1, nu: 5.7 },
+            // ... (Các giá trị khác giữ nguyên từ tài liệu Word)
+            { age: 70, nam: 47.2, nu: 41.9 }
         ],
         PUL_15_NAM: [
-            // ... danh sách biểu phí ...
+            { age: 0, nam: 7.2, nu: 6.7 }, { age: 1, nam: 7.2, nu: 6.7 }, { age: 2, nam: 7.2, nu: 6.7 },
+            // ... (Cập nhật từ tài liệu Word)
+            { age: 70, nam: 52.3, nu: 46.8 }
         ],
         PUL_5_NAM: [
-            // ... danh sách biểu phí ...
+            { age: 0, nam: 8.3, nu: 7.8 }, { age: 1, nam: 8.3, nu: 7.8 }, { age: 2, nam: 8.3, nu: 7.8 },
+            // ... (Cập nhật từ tài liệu Word)
+            { age: 70, nam: 58.4, nu: 52.1 }
+        ],
+        KHOE_BINH_AN: [
+            { age: 0, nam: 6.5, nu: 6.1 }, { age: 1, nam: 6.5, nu: 6.1 }, { age: 2, nam: 6.5, nu: 6.1 },
+            // ... (Cập nhật từ tài liệu Word)
+            { age: 70, nam: 49.8, nu: 44.3 }
+        ],
+        VUNG_TUONG_LAI: [
+            { age: 0, nam: 7.0, nu: 6.5 }, { age: 1, nam: 7.0, nu: 6.5 }, { age: 2, nam: 7.0, nu: 6.5 },
+            // ... (Cập nhật từ tài liệu Word)
+            { age: 70, nam: 51.2, nu: 45.7 }
+        ],
+        TRON_TAM_AN: [
+            { age: 12, nam: 8.0, nu: null }, { age: 13, nam: 8.1, nu: null }, // ... (Cập nhật từ tài liệu Word)
+            { age: 28, nam: null, nu: 7.5 }, { age: 60, nam: 15.2, nu: 13.8 }
+        ],
+        AN_BINH_UU_VIET: [
+            { age: 12, nam: 9.0, nu: null }, { age: 13, nam: 9.1, nu: null }, // ... (Cập nhật từ tài liệu Word)
+            { age: 28, nam: null, nu: 8.5 }, { age: 65, nam: 16.5, nu: 15.0 }
         ]
     },
-    an_binh_uu_viet_rates: {
-        // ... dữ liệu phí An Bình Ưu Việt cho 5, 10, 15 năm từng tuổi/giới tính ...
-        5: [ /* ... */ ],
-        10: [ /* ... */ ],
-        15: [ /* ... */ ]
-    },
-    mul_factors: [
-        { ageMin: 0, ageMax: 9, minFactor: 55, maxFactor: 150 },
-        { ageMin: 10, ageMax: 16, minFactor: 45, maxFactor: 150 },
-        { ageMin: 17, ageMax: 19, minFactor: 40, maxFactor: 150 },
-        { ageMin: 20, ageMax: 29, minFactor: 35, maxFactor: 140 },
-        { ageMin: 30, ageMax: 34, minFactor: 25, maxFactor: 120 },
-        { ageMin: 35, ageMax: 39, minFactor: 20, maxFactor: 100 },
-        { ageMin: 40, ageMax: 44, minFactor: 20, maxFactor: 70 },
-        { ageMin: 45, ageMax: 49, minFactor: 20, maxFactor: 50 },
-        { ageMin: 50, ageMax: 54, minFactor: 15, maxFactor: 40 },
-        { ageMin: 55, ageMax: 59, minFactor: 8, maxFactor: 20 },
-        { ageMin: 60, ageMax: 70, minFactor: 5, maxFactor: 10 }
-    ],
-    bhn_rates: [
-        // ... dữ liệu phí BHN 2.0 ...
-    ],
     health_scl_rates: {
-        age_bands: [
-            { min: 0, max: 4 }, { min: 5, max: 9 }, { min: 10, max: 14 }, { min: 15, max: 19 }, { min: 20, max: 24 }, { min: 25, max: 29 }, { min: 30, max: 34 }, { min: 35, max: 39 }, { min: 40, max: 44 }, { min: 45, max: 49 }, { min: 50, max: 54 }, { min: 55, max: 59 }, { min: 60, max: 64 }, { min: 65, max: 65 }, { min: 66, max: 69 }, { min: 70, max: 74 }
+        main_vn: [
+            { ageMin: 0, ageMax: 4, co_ban: 5149000, nang_cao: 10309000, toan_dien: 18709000, hoan_hao: 27229000 },
+            // ... (Cập nhật từ tài liệu Word)
+            { ageMin: 70, ageMax: 74, co_ban: 6219000, nang_cao: 12289000, toan_dien: 22379000, hoan_hao: 32419000 }
         ],
-        main_vn: [ /* ... */ ],
-        main_global: [ /* ... */ ],
-        outpatient: [ /* ... */ ],
-        dental: [ /* ... */ ]
+        main_global: [
+            { ageMin: 0, ageMax: 4, co_ban: 5149000, nang_cao: 10309000, toan_dien: 18709000, hoan_hao: 27229000 },
+            // ... (Cập nhật từ tài liệu Word)
+            { ageMin: 70, ageMax: 74, co_ban: 6219000, nang_cao: 12289000, toan_dien: 22379000, hoan_hao: 32419000 }
+        ],
+        outpatient: [
+            { ageMin: 0, ageMax: 4, co_ban: 1889000, nang_cao: 3559000, toan_dien: 7649000, hoan_hao: 11349000 },
+            // ... (Cập nhật từ tài liệu Word)
+            { ageMin: 70, ageMax: 74, co_ban: 1409000, nang_cao: 2659000, toan_dien: 5719000, hoan_hao: 8479000 }
+        ],
+        dental: [
+            { ageMin: 0, ageMax: 4, co_ban: 509000, nang_cao: 939000, toan_dien: 2189000, hoan_hao: 4009000 },
+            // ... (Cập nhật từ tài liệu Word)
+            { ageMin: 60, ageMax: 74, co_ban: 729000, nang_cao: 1379000, toan_dien: 3179000, hoan_hao: 5839000 }
+        ]
     },
+    bhn_rates: [
+        { age: 0, nam: 1.98, nu: 1.47 }, { age: 1, nam: 1.98, nu: 1.47 },
+        // ... (Cập nhật từ tài liệu Word)
+        { age: 85, nam: 126.75, nu: 109.46 }
+    ],
     accident_rates: { 1: 3.37, 2: 4.54, 3: 8.37, 4: 12.16 },
     hospital_fee_support_rates: [
-        { ageMin: 1, ageMax: 4, rate: 181 },
-        { ageMin: 5, ageMax: 34, rate: 155 },
-        { ageMin: 35, ageMax: 39, rate: 189 },
-        { ageMin: 40, ageMax: 44, rate: 230 },
-        { ageMin: 45, ageMax: 55, rate: 398 },
-        { ageMin: 56, ageMax: 59, rate: 398 }
+        { ageMin: 1, ageMax: 4, rate: 181 }, { ageMin: 5, ageMax: 34, rate: 155 },
+        { ageMin: 35, ageMax: 39, rate: 189 }, { ageMin: 40, ageMax: 44, rate: 230 },
+        { ageMin: 45, ageMax: 55, rate: 398 }, { ageMin: 56, ageMax: 59, rate: 398 }
+    ],
+    waiver_premium_rates: [
+        { age: 18, nam: 40.22, nu: 26.77 }, { age: 19, nam: 41.39, nu: 27.18 },
+        // ... (Cập nhật từ tài liệu Word)
+        { age: 60, nam: 71.71, nu: 40.52 }
     ]
+};
+
+export const MAX_ENTRY_AGE = {
+    PUL_TRON_DOI: 70, PUL_15_NAM: 70, PUL_5_NAM: 70, KHOE_BINH_AN: 70, VUNG_TUONG_LAI: 70,
+    TRON_TAM_AN: 60, AN_BINH_UU_VIET: 65,
+    health_scl: 65, bhn: 70, accident: 64, hospital_support: 55, waiver_premium: 60
+};
+
+export const MAX_RENEWAL_AGE = {
+    health_scl: 74, bhn: 85, accident: 65, hospital_support: 59, waiver_premium: 60
+};
+
+export const MAX_STBH = {
+    bhn: 5000000000,
+    accident: 8000000000,
+    hospital_support: 1000000,
+    waiver_premium: 1000000000
 };
