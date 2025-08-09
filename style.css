@@ -3,8 +3,7 @@
 }
 
 body {
-    font-family: 'Be Vietnam Pro', 'Noto Sans', Arial, sans-serif;
-    background-color: #f9fafb;
+    font-family: 'Be Vietnam Pro', sans-serif;
 }
 
 .text-aia-red {
@@ -17,11 +16,6 @@ body {
 
 .border-aia-red {
     border-color: var(--aia-red);
-}
-
-header {
-    background: #fff;
-    border-bottom: 1px solid #eee;
 }
 
 .form-input, .form-select {
@@ -54,6 +48,10 @@ header {
     box-shadow: 0 0 0 2px rgba(217, 35, 45, 0.2);
 }
 
+.product-section.hidden, .hidden {
+    display: none;
+}
+
 input:disabled, select:disabled, .disabled {
     background-color: #f3f4f6;
     cursor: not-allowed;
@@ -64,23 +62,11 @@ input:disabled, select:disabled, .disabled {
     padding: 1rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    background: #fff;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
-}
-
-.product-section.hidden, .hidden {
-    display: none !important;
 }
 
 .occupation-autocomplete .autocomplete-item {
     padding: 0.75rem;
     cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-.occupation-autocomplete .autocomplete-item:last-child {
-    border-bottom: none;
 }
 
 .occupation-autocomplete .autocomplete-item:hover {
@@ -88,60 +74,27 @@ input:disabled, select:disabled, .disabled {
 }
 
 #summary-modal.hidden {
-    display: none !important;
+    display: none;
 }
+
 #summary-modal {
     display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.form-select {
-    width: 100%;
 }
 
-.form-checkbox {
-    width: 1.25rem;
-    height: 1.25rem;
+.error-message {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
 }
 
-.text-aia-red {
-    color: #e30613;
-}
-.bg-aia-red {
-    background-color: #e30613;
-}
-
-button, .form-input, .form-select {
-    font-family: inherit;
+.input-hint {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
 }
 
-button:active {
-    opacity: 0.8;
-}
-
-footer {
-    background: #fff;
-    color: #888;
-    border-top: 1px solid #eee;
-}
-
-@media (max-width: 768px) {
-    main {
-        padding: 1rem !important;
+@media (max-width: 640px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
     }
-    .product-section {
-        padding: 0.5rem;
-    }
-    #summary-modal > div {
-        padding: 1rem !important;
-    }
-}
-
-::-webkit-scrollbar {
-    width: 8px;
-    background: #f3f4f6;
-}
-::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 4px;
 }
