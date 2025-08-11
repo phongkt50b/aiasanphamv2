@@ -1535,7 +1535,7 @@ function generateSupplementaryProductsHtml(personId) {
 // TẤT CẢ như trong file ban đầu của bạn.
 
 // Cuối file, ta thêm module MDP3:
-// ===== MODULE MDP3 - PHIÊN BẢN CUỐI CÙNG (SỬA LỖI HIỂN THỊ + GIỮ LOGIC GỐC) =====
+// ===== MODULE MDP3 - PHIÊN BẢN PHỤC HỒI LOGIC GỐC VÀ SỬA LỖI HIỂN THỊ =====
 window.MDP3 = (function () {
     let selectedId = null;
 
@@ -1544,6 +1544,7 @@ window.MDP3 = (function () {
         attachListeners();
     }
 
+    // Hiện/ẩn Section 5 tùy sản phẩm chính
     function renderSection() {
         const sec = document.getElementById('mdp3-section');
         if (!sec) return;
@@ -1556,7 +1557,7 @@ window.MDP3 = (function () {
         }
     }
 
-    // Render dropdown danh sách người - GIỮ NGUYÊN LOGIC GỐC CHỈ CÓ NĐBH BỔ SUNG
+    // **PHỤC HỒI LOGIC GỐC:** Chỉ hiển thị NĐBH Bổ Sung và "Người khác"
     function renderSelect() {
         const selectContainer = document.getElementById('mdp3-select-container');
         if (!selectContainer) return;
@@ -1565,7 +1566,7 @@ window.MDP3 = (function () {
                         <option value="">-- Chọn người --</option>`;
 
         document.querySelectorAll('.person-container').forEach(cont => {
-            // Chỉ lấy NĐBH Bổ Sung, không lấy NĐBH Chính
+            // **LOGIC GỐC CỦA BẠN:** Chỉ lấy NĐBH Bổ Sung
             if (cont.id !== 'main-person-container' && !cont.id.includes('mdp3-other')) {
                 const info = getCustomerInfo(cont, false);
                 let label = info.name || 'NĐBH bổ sung';
@@ -1590,7 +1591,7 @@ window.MDP3 = (function () {
         selectContainer.innerHTML = html;
     }
 
-    // SỬA LẠI LOGIC ẨN/HIỆN CHO ĐÚNG
+    // **SỬA LỖI HIỂN THỊ:** Ẩn/hiện toàn bộ hộp tùy chọn
     function attachListeners() {
         document.getElementById('main-product').addEventListener('change', renderSection);
 
@@ -1641,14 +1642,14 @@ window.MDP3 = (function () {
         });
     }
 
-    // ĐẢM BẢO AN TOÀN KHI TÍNH PHÍ
+    // **ĐẢM BẢO AN TOÀN KHI TÍNH PHÍ:**
     function getPremium() {
         const checkbox = document.getElementById('mdp3-enable');
         const feeDisplay = document.getElementById('mdp3-fee-display');
 
         // Nếu checkbox không được chọn hoặc không có người nào được chọn -> phí bằng 0 và dọn dẹp UI
         if (!checkbox || !checkbox.checked || !selectedId) {
-            if (feeDisplay && checkbox && checkbox.checked) {
+             if (feeDisplay && checkbox && checkbox.checked) {
                  // Trường hợp bật checkbox nhưng chưa chọn ai
                  feeDisplay.textContent = `STBH: — | Phí: —`;
             }
