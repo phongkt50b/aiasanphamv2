@@ -236,6 +236,10 @@ function initSupplementaryButton() {
         container.appendChild(newPersonDiv);
         initPerson(newPersonDiv, personId, true);
         updateSupplementaryAddButtonState();
+        
+        // ===== SỬA ĐỔI: Reset MDP3 khi thêm người mới =====
+        resetMdp3Checkbox();
+        
         calculateAll();
 
         // ===== MDP3 BỔ SUNG ===== render lại danh sách
