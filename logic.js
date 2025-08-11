@@ -20,7 +20,21 @@ const MAX_STBH = {
 
 // Ngày tham chiếu tính tuổi
 const REFERENCE_DATE = new Date(2025, 7, 9); // tháng 8 là index 7
-
+// ===== MỚI: Hàm chuyên dụng để reset checkbox Miễn Đóng Phí =====
+/**
+ * Tìm và bỏ chọn checkbox MDP3, sau đó kích hoạt sự kiện 'change'
+ * để ẩn các tùy chọn của nó. Đây là một cơ chế an toàn.
+ */
+function resetMdp3Checkbox() {
+    if (!window.MDP3) return;
+    const checkbox = document.getElementById('mdp3-enable');
+    // Chỉ thực hiện nếu checkbox đang được chọn
+    if (checkbox && checkbox.checked) {
+        checkbox.checked = false;
+        // Kích hoạt sự kiện 'change' để module MDP3 tự xử lý việc ẩn UI của nó
+        checkbox.dispatchEvent(new Event('change'));
+    }
+}
 document.addEventListener('DOMContentLoaded', () => {
     initPerson(document.getElementById('main-person-container'), 'main');
     initMainProductLogic();
