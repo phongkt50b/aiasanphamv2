@@ -28,11 +28,61 @@ document.addEventListener('DOMContentLoaded', () => {
     initSummaryModal();
     attachGlobalListeners();
     updateSupplementaryAddButtonState();
+    observeSupplementaryContainer(); // Bật bản vá: theo dõi thêm/xóa người
     calculateAll();
 
     // ===== MDP3 BỔ SUNG =====
     if (window.MDP3) MDP3.init();
 });
+
+// ===== Helpers làm tròn & validate DOB =====
+function roundDownTo1000(n) {
+    n = Number(n) || 0;
+    if (n <= 0) return 0;
+    return Math.floor(n / 1000) * 1000;
+}
+
+function roundInputToThousand(input) {
+    if (!input) return;
+    // Loại trừ các input không phải tiền và Hỗ trợ viện phí (bội số 100.000)
+    if (
+        input.classList.contains('dob-input') ||
+        input.classList.contains('occupation-input') ||
+        input.classList.contains('name-input') ||
+        input.classList.contains('hospital-support-stbh')
+    ) return;
+
+    const raw = parseFormattedNumber(input.value || '');
+    if (!raw) { input.value = ''; return; }
+    const rounded = roundDownTo1000(raw);
+    input.value = rounded.toLocaleString('vi-VN');
+}
+
+function validateDobField(input) {
+    if (!input) return false;
+    const v = (input.value || '').trim();
+    const re = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!re.test(v)) {
+        setFieldError(input, 'Ngày sinh không hợp lệ, nhập DD/MM/YYYY');
+        return false;
+    }
+    const [dd, mm, yyyy] = v.split('/').map(n => parseInt(n, 10));
+    const d = new Date(yyyy, mm - 1, dd);
+    const valid = d.getFullYear() === yyyy && d.getMonth() === (mm - 1) && d.getDate() === dd && d <= REFERENCE_DATE;
+    if (!valid) {
+        setFieldError(input, 'Ngày sinh không hợp lệ, nhập DD/MM/YYYY');
+        return false;
+    }
+    clearFieldError(input);
+    return true;
+}
+
+// Cập nhật: tất cả hiển thị tiền sẽ làm tròn xuống 1.000 trước khi format
+function formatCurrency(value, suffix = ' VNĐ') {
+    const num = Number(value) || 0;
+    const rounded = roundDownTo1000(num);
+    return rounded.toLocaleString('vi-VN') + suffix;
+}
 
 function attachGlobalListeners() {
     const allInputs = 'input, select';
@@ -91,7 +141,22 @@ function attachGlobalListeners() {
             }
         }
     });
+
+    // NEW: auto làm tròn 1.000 khi rời ô tiền + validate DOB cho NĐBH bổ sung/MDP3
+    document.body.addEventListener('focusout', (e) => {
+        if (e.target.matches('input[type="text"]')) {
+            // Round 1.000 cho các input tiền tệ (trừ hospital-support-stbh)
+            roundInputToThousand(e.target);
+
+            // Validate DOB cho NĐBH bổ sung & "Người khác" (MDP3). NĐBH chính đã có validate riêng
+            if (e.target.classList.contains('dob-input') && !e.target.closest('#main-person-container')) {
+                validateDobField(e.target);
+            }
+            calculateAll();
+        }
+    }, true);
 }
+
 function initPerson(container, personId, isSupp = false) {
     if (!container) return;
     container.dataset.personId = personId;
@@ -115,6 +180,11 @@ function initPerson(container, personId, isSupp = false) {
 
         occInput?.addEventListener('input', validateMainPersonInputs);
         occInput?.addEventListener('blur', validateMainPersonInputs);
+    } else {
+        // Validate DOB cho mọi NĐBH bổ sung
+        const dobInput = container.querySelector('.dob-input');
+        dobInput?.addEventListener('blur', () => validateDobField(dobInput));
+        dobInput?.addEventListener('input', () => validateDobField(dobInput));
     }
 
     const suppProductsContainer = isSupp ? container.querySelector('.supplementary-products-container') : document.querySelector('#main-supp-container .supplementary-products-container');
@@ -213,6 +283,17 @@ function updateSupplementaryAddButtonState() {
     btn.classList.toggle('opacity-50', disabled);
     btn.classList.toggle('cursor-not-allowed', disabled);
 }
+// Bản vá: theo dõi container để tự cập nhật nút Thêm
+function observeSupplementaryContainer() {
+    const cont = document.getElementById('supplementary-insured-container');
+    if (!cont || cont._observerAttached) return;
+    const observer = new MutationObserver(() => {
+        updateSupplementaryAddButtonState();
+    });
+    observer.observe(cont, { childList: true });
+    cont._observerAttached = true;
+}
+
 function initSupplementaryButton() {
     document.getElementById('add-supp-insured-btn').addEventListener('click', () => {
         if (getSupplementaryCount() >= 10) {
@@ -884,7 +965,8 @@ function calculateMainPremium(customer, ageOverride = null) {
         premium = enteredPremium;
     }
 
-    return premium;
+    // NEW: luôn trả về phí đã làm tròn 1.000
+    return roundDownTo1000(premium);
 }
 
 function calculateHealthSclPremium(customer, container, ageOverride = null) {
@@ -909,8 +991,9 @@ function calculateHealthSclPremium(customer, container, ageOverride = null) {
     if (hasOutpatient) totalPremium += product_data.health_scl_rates.outpatient?.[ageBandIndex]?.[program] || 0;
     if (hasDental) totalPremium += product_data.health_scl_rates.dental?.[ageBandIndex]?.[program] || 0;
 
-    if (!ageOverride) section.querySelector('.fee-display').textContent = totalPremium > 0 ? `Phí: ${formatCurrency(totalPremium)}` : '';
-    return totalPremium;
+    const rounded = roundDownTo1000(totalPremium);
+    if (!ageOverride) section.querySelector('.fee-display').textContent = rounded > 0 ? `Phí: ${formatCurrency(rounded)}` : '';
+    return rounded;
 }
 
 function calculateBhnPremium(customer, container, ageOverride = null) {
@@ -924,20 +1007,24 @@ function calculateBhnPremium(customer, container, ageOverride = null) {
 
     const { gender } = customer;
     const stbhInput = section.querySelector('.bhn-stbh');
-    const stbh = parseFormattedNumber(stbhInput?.value || '0');
+    const stbhRaw = parseFormattedNumber(stbhInput?.value || '0');
+    const stbh = roundDownTo1000(stbhRaw);
     if (stbh === 0) {
         if (!ageOverride) section.querySelector('.fee-display').textContent = '';
         return 0;
     }
-    if (stbh < 100000000 || stbh > MAX_STBH.bhn) {
-        setFieldError(stbhInput, 'STBH không hợp lệ, từ 100 triệu đến 5 tỷ');
-        throw new Error('STBH không hợp lệ, từ 100 triệu đến 5 tỷ');
+
+    // NEW: min 200 triệu
+    if (stbh < 200_000_000 || stbh > MAX_STBH.bhn) {
+        setFieldError(stbhInput, 'STBH không hợp lệ, từ 200 triệu đến 5 tỷ');
+        throw new Error('STBH không hợp lệ, từ 200 triệu đến 5 tỷ');
     } else {
         clearFieldError(stbhInput);
     }
 
     const rate = product_data.bhn_rates.find(r => ageToUse >= r.ageMin && ageToUse <= r.ageMax)?.[gender === 'Nữ' ? 'nu' : 'nam'] || 0;
-    const premium = (stbh / 1000) * rate;
+    const premiumRaw = (stbh / 1000) * rate;
+    const premium = roundDownTo1000(premiumRaw);
     if (!ageOverride) section.querySelector('.fee-display').textContent = `Phí: ${formatCurrency(premium)}`;
     return premium;
 }
@@ -954,20 +1041,24 @@ function calculateAccidentPremium(customer, container, ageOverride = null) {
     const { riskGroup } = customer;
     if (riskGroup === 0) return 0;
     const stbhInput = section.querySelector('.accident-stbh');
-    const stbh = parseFormattedNumber(stbhInput?.value || '0');
+    const stbhRaw = parseFormattedNumber(stbhInput?.value || '0');
+    const stbh = roundDownTo1000(stbhRaw);
     if (stbh === 0) {
         if (!ageOverride) section.querySelector('.fee-display').textContent = '';
         return 0;
     }
-    if (stbh < 100000000 || stbh > MAX_STBH.accident) {
-        setFieldError(stbhInput, 'STBH không hợp lệ, từ 100 triệu đến 8 tỷ');
-        throw new Error('STBH không hợp lệ, từ 100 triệu đến 8 tỷ');
+
+    // NEW: min 10 triệu
+    if (stbh < 10_000_000 || stbh > MAX_STBH.accident) {
+        setFieldError(stbhInput, 'STBH không hợp lệ, từ 10 triệu đến 8 tỷ');
+        throw new Error('STBH không hợp lệ, từ 10 triệu đến 8 tỷ');
     } else {
         clearFieldError(stbhInput);
     }
 
     const rate = product_data.accident_rates[riskGroup] || 0;
-    const premium = (stbh / 1000) * rate;
+    const premiumRaw = (stbh / 1000) * rate;
+    const premium = roundDownTo1000(premiumRaw);
     if (!ageOverride) section.querySelector('.fee-display').textContent = `Phí: ${formatCurrency(premium)}`;
     return premium;
 }
@@ -1010,7 +1101,8 @@ function calculateHospitalSupportPremium(customer, mainPremium, container, total
     clearFieldError(section.querySelector('.hospital-support-stbh'));
 
     const rate = product_data.hospital_fee_support_rates.find(r => ageToUse >= r.ageMin && ageToUse <= r.ageMax)?.rate || 0;
-    const premium = (stbh / 100) * rate;
+    const premiumRaw = (stbh / 100) * rate;
+    const premium = roundDownTo1000(premiumRaw);
     if (!ageOverride) section.querySelector('.fee-display').textContent = `Phí: ${formatCurrency(premium)}`;
     return premium;
 }
@@ -1176,17 +1268,12 @@ function generateSummaryTable() {
 }
 
 function sanitizeHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function exportToHTML(mainPersonInfo, suppPersons, targetAge, initialMainPremiumWithExtra, paymentTerm) {
     // Bản gọn: dùng print để xuất PDF
     window.print();
-}
-
-function formatCurrency(value, suffix = ' VNĐ') {
-    if (isNaN(value)) return '0' + suffix;
-    return Math.round(value).toLocaleString('vi-VN') + suffix;
 }
 
 function formatNumberInput(input) {
@@ -1516,13 +1603,7 @@ function generateSupplementaryProductsHtml(personId) {
     `;
 }
 // === Các hàm gốc khác giữ nguyên ===
-// parseFormattedNumber, formatCurrency, formatNumberInput, setFieldError, clearFieldError, 
-// validateMainPersonInputs, validateSection2FieldsPreCalc, getExtraPremiumValue, validateExtraPremiumLimit, 
-// updateMainProductFeeDisplay, getHealthSclStbhByProgram, updateHealthSclStbhInfo, 
-// generateSupplementaryPersonHtml, generateSupplementaryProductsHtml
-// TẤT CẢ như trong file ban đầu của bạn.
 
-// Cuối file, ta thêm module MDP3:
 // ===== MODULE MDP3 =====
 window.MDP3 = (function () {
     let selectedId = null;
@@ -1651,11 +1732,13 @@ window.MDP3 = (function () {
                     const suppBlock = otherForm.querySelector('.mt-4');
                     if (suppBlock) suppBlock.style.display = 'none';
 
-                    // Nghe DOB để tính realtime
+                    // Nghe DOB để validate + tính realtime
                     const dobInput = otherForm.querySelector('.dob-input');
                     dobInput?.addEventListener('input', () => {
+                        validateDobField(dobInput);
                         calculateAll();
                     });
+                    dobInput?.addEventListener('blur', () => validateDobField(dobInput));
                 } else {
                     otherForm.classList.add('hidden');
                     otherForm.innerHTML = '';
@@ -1713,7 +1796,8 @@ window.MDP3 = (function () {
 
         // Tính phí nếu đủ tuổi
         const rate = findMdp3Rate(age, gender);
-        const premium = Math.round((stbhBase / 1000) * rate);
+        const premiumRaw = (stbhBase / 1000) * rate;
+        const premium = roundDownTo1000(premiumRaw);
 
         if (feeEl) {
             feeEl.textContent = premium > 0
