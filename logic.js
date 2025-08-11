@@ -1605,18 +1605,29 @@ window.MDP3 = (function () {
     }
 
     // Gắn sự kiện cho checkbox và dropdown
-    function attachListeners() {
+        function attachListeners() {
         // Render lại Section khi đổi sản phẩm chính
         document.getElementById('main-product').addEventListener('change', renderSection);
 
         document.body.addEventListener('change', function (e) {
+            // Sửa logic cho checkbox bật/tắt
             if (e.target.id === 'mdp3-enable') {
+                const selectContainer = document.getElementById('mdp3-select-container');
+                const feeDisplay = document.getElementById('mdp3-fee-display');
+
                 if (e.target.checked) {
+                    // Khi được check, hiện container và tạo danh sách chọn
+                    selectContainer.classList.remove('hidden');
                     renderSelect();
                 } else {
-                    document.getElementById('mdp3-select-container').innerHTML = '';
-                    document.getElementById('mdp3-fee-display').textContent = '';
+                    // Khi bỏ check, ẩn container, dọn dẹp và reset
+                    selectContainer.classList.add('hidden');
+                    selectContainer.innerHTML = ''; // Dọn dẹp để không lưu lựa chọn cũ
+                    if (feeDisplay) feeDisplay.textContent = ''; // Xóa hiển thị phí
+                    selectedId = null; // Quan trọng: reset lựa chọn đã lưu
                 }
+                // Sau khi thay đổi trạng thái, tính toán lại tất cả
+                calculateAll();
             }
 
             if (e.target.id === 'mdp3-person-select') {
@@ -1637,11 +1648,10 @@ window.MDP3 = (function () {
                     const suppBlock = otherForm.querySelector('.mt-4');
                     if (suppBlock) suppBlock.style.display = 'none';
 
-                    // Nghe DOB để tính realtime
-                    const dobInput = otherForm.querySelector('.dob-input');
-                    dobInput?.addEventListener('input', () => {
-                        calculateAll();
-                    });
+                    // Nghe sự kiện trên các input của form "Người khác"
+                    const inputs = otherForm.querySelectorAll('.dob-input, .gender-select, .occupation-input');
+                    inputs.forEach(input => input.addEventListener('input', calculateAll));
+
                 } else {
                     otherForm.classList.add('hidden');
                     otherForm.innerHTML = '';
@@ -1650,7 +1660,6 @@ window.MDP3 = (function () {
             }
         });
     }
-
     // Tính phí MDP3
     function getPremium() {
         if (!selectedId || !window.personFees) return 0;
