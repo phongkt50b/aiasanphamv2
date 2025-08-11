@@ -222,6 +222,7 @@ function updateSupplementaryAddButtonState() {
 }
 function initSupplementaryButton() {
     document.getElementById('add-supp-insured-btn').addEventListener('click', () => {
+        disableMDP3();
         if (getSupplementaryCount() >= 10) {
             updateSupplementaryAddButtonState();
             return;
