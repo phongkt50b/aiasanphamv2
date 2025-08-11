@@ -1388,8 +1388,8 @@ function setPaymentTermHint(mainProduct, age) {
     if (!hintEl) return;
     const { min, max } = getPaymentTermBounds(age);
     let hint = `Nhập từ ${min} đến ${max} năm`;
-    if (mainProduct === 'PUL_5_NAM') hint += ' Nhập từ 5 đến ${max} năm';
-    if (mainProduct === 'PUL_15_NAM') hint += ' Nhập từ 15 đến ${max} năm';
+    if (mainProduct === 'PUL_5_NAM') hint = `Nhập từ 5 đến ${max} năm`;
+    if (mainProduct === 'PUL_15_NAM') hint = `Nhập từ 15 đến ${max} năm`;
     hintEl.textContent = hint;
 }
 
