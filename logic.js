@@ -67,6 +67,15 @@ function attachGlobalListeners() {
         }
     });
 }
+// Thêm hàm helper để tắt MDP3
+function disableMDP3() {
+    const mdp3Checkbox = document.getElementById('mdp3-enable');
+    if (mdp3Checkbox && mdp3Checkbox.checked) {
+        mdp3Checkbox.checked = false;
+        mdp3Checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
 function initPerson(container, personId, isSupp = false) {
     if (!container) return;
     container.dataset.personId = personId;
@@ -89,6 +98,20 @@ function initPerson(container, personId, isSupp = false) {
 
         occInput?.addEventListener('input', validateMainPersonInputs);
         occInput?.addEventListener('blur', validateMainPersonInputs);
+    } else {
+        // Nếu là NĐBH bổ sung, thêm listener để tắt MDP3 khi thay đổi thông tin
+        const nameInput = container.querySelector('.name-input');
+        const dobInput = container.querySelector('.dob-input');
+        const genderSelect = container.querySelector('.gender-select');
+        const occInput = container.querySelector('.occupation-input');
+
+        nameInput?.addEventListener('input', disableMDP3);
+        dobInput?.addEventListener('input', () => {
+            disableMDP3();
+            if (window.MDP3) MDP3.renderSelect();
+        });
+        genderSelect?.addEventListener('change', disableMDP3);
+        occInput?.addEventListener('input', disableMDP3);
     }
 
     const suppProductsContainer = isSupp ? container.querySelector('.supplementary-products-container') : document.querySelector('#main-supp-container .supplementary-products-container');
@@ -165,8 +188,18 @@ function initPerson(container, personId, isSupp = false) {
             calculateAll();
         });
     }
-}
 
+    // Thêm listener cho tất cả checkbox và input sản phẩm bổ sung nếu là NĐBH bổ sung
+    if (isSupp) {
+        const allSupplementaryInputs = suppProductsContainer.querySelectorAll('input, select');
+        allSupplementaryInputs.forEach(input => {
+            input.addEventListener('change', disableMDP3);
+            if (input.type === 'text') {
+                input.addEventListener('input', disableMDP3);
+            }
+        });
+    }
+}
 function initMainProductLogic() {
     document.getElementById('main-product').addEventListener('change', () => {
         updateSupplementaryAddButtonState();
