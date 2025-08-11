@@ -1535,7 +1535,7 @@ function generateSupplementaryProductsHtml(personId) {
 // TẤT CẢ như trong file ban đầu của bạn.
 
 // Cuối file, ta thêm module MDP3:
-// ===== MODULE MDP3 - PHIÊN BẢN GỐC CỦA BẠN =====
+// ===== MODULE MDP3 - PHIÊN BẢN PHỤC HỒI LOGIC GỐC VÀ SỬA LỖI HIỂN THỊ =====
 window.MDP3 = (function () {
     let selectedId = null;
 
@@ -1544,7 +1544,7 @@ window.MDP3 = (function () {
         attachListeners();
     }
 
-    // Hiện/ẩn Section 5 tùy sản phẩm chính
+    // SỬA CẤU TRÚC HTML ĐƯỢC TẠO RA ĐỂ DỄ DÀNG ẨN/HIỆN
     function renderSection() {
         const sec = document.getElementById('mdp3-section');
         if (!sec) return;
@@ -1556,7 +1556,7 @@ window.MDP3 = (function () {
         }
         sec.classList.remove('hidden');
 
-        // Thêm checkbox bật/tắt nếu chưa có
+        // Tạo cấu trúc HTML hoàn chỉnh một lần duy nhất
         const container = document.getElementById('mdp3-radio-list');
         if (container && !document.getElementById('mdp3-enable')) {
             container.innerHTML = `
@@ -1566,12 +1566,15 @@ window.MDP3 = (function () {
                         Bật Miễn đóng phí 3.0
                     </label>
                 </div>
-                <div id="mdp3-select-container"></div>
+                <!-- Hộp lớn chứa toàn bộ tùy chọn, ban đầu sẽ ẩn đi -->
+                <div id="mdp3-options-container" class="hidden mt-3 pl-8 space-y-4 border-l-2 border-gray-200">
+                    <div id="mdp3-select-container"></div>
+                </div>
             `;
         }
     }
 
-    // Render dropdown danh sách người được bảo hiểm bổ sung hoặc "Người khác"
+    // PHỤC HỒI LOGIC GỐC: Chỉ hiển thị NĐBH Bổ Sung và "Người khác"
     function renderSelect() {
         const selectContainer = document.getElementById('mdp3-select-container');
         if (!selectContainer) return;
@@ -1580,6 +1583,7 @@ window.MDP3 = (function () {
                         <option value="">-- Chọn người --</option>`;
 
         document.querySelectorAll('.person-container').forEach(cont => {
+            // LOGIC GỐC CỦA BẠN: Chỉ lấy NĐBH Bổ Sung
             if (cont.id !== 'main-person-container' && !cont.id.includes('mdp3-other')) {
                 const info = getCustomerInfo(cont, false);
                 let label = info.name || 'NĐBH bổ sung';
@@ -1593,7 +1597,6 @@ window.MDP3 = (function () {
                     label += ' - Không đủ điều kiện';
                     disabled = 'disabled';
                 }
-
                 html += `<option value="${cont.id}" ${disabled}>${label}</option>`;
             }
         });
@@ -1604,19 +1607,26 @@ window.MDP3 = (function () {
         selectContainer.innerHTML = html;
     }
 
-    // Gắn sự kiện cho checkbox và dropdown
+    // SỬA LẠI LOGIC ẨN/HIỆN CHO ĐÚNG
     function attachListeners() {
-        // Render lại Section khi đổi sản phẩm chính
         document.getElementById('main-product').addEventListener('change', renderSection);
 
         document.body.addEventListener('change', function (e) {
             if (e.target.id === 'mdp3-enable') {
+                const optionsContainer = document.getElementById('mdp3-options-container'); // Tìm cái hộp lớn chứa tùy chọn
+                if (!optionsContainer) return;
+
                 if (e.target.checked) {
+                    // Khi check: Hiện hộp tùy chọn và tạo danh sách người
+                    optionsContainer.classList.remove('hidden');
                     renderSelect();
                 } else {
-                    document.getElementById('mdp3-select-container').innerHTML = '';
+                    // Khi bỏ check: Ẩn hộp tùy chọn, dọn dẹp và reset
+                    optionsContainer.classList.add('hidden');
                     document.getElementById('mdp3-fee-display').textContent = '';
+                    selectedId = null; // Quan trọng: reset lựa chọn đã lưu
                 }
+                calculateAll();
             }
 
             if (e.target.id === 'mdp3-person-select') {
@@ -1624,24 +1634,18 @@ window.MDP3 = (function () {
                 const otherForm = document.getElementById('mdp3-other-form');
 
                 if (selectedId === 'other') {
-                    // Render form người khác
                     otherForm.classList.remove('hidden');
                     otherForm.innerHTML = `
                         <div id="person-container-mdp3-other" class="person-container">
                             ${generateSupplementaryPersonHtml('mdp3-other', '—')}
-                        </div>
-                    `;
+                        </div>`;
                     initPerson(document.getElementById('person-container-mdp3-other'), 'mdp3-other', true);
 
-                    // Ẩn phần sản phẩm bổ sung của "Người khác"
                     const suppBlock = otherForm.querySelector('.mt-4');
                     if (suppBlock) suppBlock.style.display = 'none';
-
-                    // Nghe DOB để tính realtime
+                    
                     const dobInput = otherForm.querySelector('.dob-input');
-                    dobInput?.addEventListener('input', () => {
-                        calculateAll();
-                    });
+                    dobInput?.addEventListener('input', () => { calculateAll(); });
                 } else {
                     otherForm.classList.add('hidden');
                     otherForm.innerHTML = '';
@@ -1651,52 +1655,72 @@ window.MDP3 = (function () {
         });
     }
 
-    // Tính phí MDP3
+    // ĐẢM BẢO AN TOÀN KHI TÍNH PHÍ
     function getPremium() {
-        if (!selectedId || !window.personFees) return 0;
+        const checkbox = document.getElementById('mdp3-enable');
+        const feeDisplay = document.getElementById('mdp3-fee-display');
 
-        // Tính STBH: phí chính thuần + phí bổ sung (không cộng extra premium)
+        // Nếu checkbox không được chọn -> phí bằng 0 và dọn dẹp UI
+        if (!checkbox || !checkbox.checked) {
+            if(feeDisplay) feeDisplay.textContent = '';
+            return 0;
+        }
+
+        // Nếu checkbox được chọn nhưng chưa chọn người
+        if (!selectedId) {
+             if (feeDisplay) feeDisplay.textContent = `STBH: — | Phí: —`;
+            return 0;
+        }
+        
+        if (!window.personFees) return 0;
+        
         let stbhBase = 0;
         for (let pid in window.personFees) {
             stbhBase += (window.personFees[pid].mainBase || 0) + (window.personFees[pid].supp || 0);
         }
 
-        // Nếu là người bổ sung trong danh sách, trừ phí bổ sung của họ
         if (selectedId !== 'other' && window.personFees[selectedId]) {
             stbhBase -= window.personFees[selectedId].supp || 0;
         }
 
         let age, gender;
-        if (selectedId === 'other') {
-            const form = document.getElementById('person-container-mdp3-other');
-            const info = getCustomerInfo(form, false);
-            age = info.age;
-            gender = info.gender;
+        let personInfoContainerId = selectedId === 'other' ? 'person-container-mdp3-other' : selectedId;
+        const personContainer = document.getElementById(personInfoContainerId);
 
-            // Nếu chưa có DOB hợp lệ → chỉ hiển thị STBH
-            if (!age || age <= 0) {
-                document.getElementById('mdp3-fee-display').textContent =
-                    `STBH: ${formatCurrency(stbhBase)} | Phí: —`;
-                return 0;
-            }
-        } else {
-            const info = getCustomerInfo(document.getElementById(selectedId), false);
-            age = info.age;
-            gender = info.gender;
+        if(!personContainer) {
+            if(feeDisplay) feeDisplay.textContent = ``;
+            return 0;
         }
 
-        // Tính phí nếu đủ tuổi
+        const info = getCustomerInfo(personContainer, false);
+        age = info.age;
+        gender = info.gender;
+        
+        if (!age || age <= 0) {
+            if(feeDisplay) feeDisplay.textContent = `STBH: ${formatCurrency(stbhBase)} | Phí: —`;
+            return 0;
+        }
+        
+        if (age < 18 || age > 60) {
+            if(feeDisplay) feeDisplay.textContent = `STBH: ${formatCurrency(stbhBase)} | Người được chọn không hợp lệ.`;
+            return 0;
+        }
+
         const rate = findMdp3Rate(age, gender);
         const premium = Math.round((stbhBase / 1000) * rate);
 
-        document.getElementById('mdp3-fee-display').textContent = premium > 0
-            ? `STBH: ${formatCurrency(stbhBase)} | Phí: ${formatCurrency(premium)}`
-            : `STBH: ${formatCurrency(stbhBase)} | Phí: —`;
-
-        return premium;
+        if(feeDisplay) {
+            feeDisplay.textContent = premium > 0
+                ? `STBH: ${formatCurrency(stbhBase)} | Phí: ${formatCurrency(premium)}`
+                : `STBH: ${formatCurrency(stbhBase)} | Phí: —`;
+        }
+        
+        return premium > 0 ? premium : 0;
     }
 
     function findMdp3Rate(age, gender) {
+        // Cần đảm bảo product_data có tồn tại mdp3_rates
+        if (!product_data.mdp3_rates) return 0;
         const genderKey = gender === 'Nữ' ? 'nu' : 'nam';
         const row = product_data.mdp3_rates.find(r => age >= r.ageMin && age <= r.ageMax);
         return row ? (row[genderKey] || 0) : 0;
