@@ -1,235 +1,0 @@
-Yêu C?u Phát Tri?n Công C? Minh H?a Phí B?o Hi?m AIA Vi?t Nam (Phiên B?n Hoàn Ch?nh)
-1. T?ng Quan
-Công c? này là m?t ?ng d?ng web giúp khách hàng nh?p thông tin cá nhân, ch?n s?n ph?m b?o hi?m c?a AIA Vi?t Nam, tính toán phí b?o hi?m d?a trên bi?u phí, và t?o b?ng minh h?a chi ti?t. ?ng d?ng c?n:
-? Giao di?n thân thi?n, responsive trên nhi?u thi?t b? (desktop, mobile).
-? Tính toán phí chính xác theo d? tu?i, gi?i tính, nhóm ngh?, STBH, và các di?u ki?n tham gia.
-? Hi?n th? l?i ngay du?i ô nh?p li?u v?i thông báo rõ ràng (màu d?), hu?ng d?n (màu xám).
-? Tích h?p tính nang m?i nhu ki?m tra di?u ki?n tham gia (tu?i, ngh?), phí dóng thêm, mi?n dóng phí 3.0, k? dóng phí (nam, quý, n?a nam), và b?ng minh h?a chi ti?t.
-? Xu?t k?t qu?: Uu tiên xu?t sang HTML don gi?n (n?u PDF ph?c t?p), nhung v?n h? tr? xu?t PDF n?u có th?. S? d?ng logo m?i c?a website.
-? Không hi?n th? don v? "VND" trong t?t c? các ph?n hi?n th? s? ti?n (ch? hi?n th? s?, ví d?: 100000000 thay vì 100.000.000 VND).
-? B? ph?n hi?n th? th?i h?n h?p d?ng riêng n?u dã hi?n th? phí ? trên; ch? gi? thông tin c?n thi?t d? tránh l?p.
-D?a trên code hi?n có trong logic.js, data.js, index.html, style.css, c?n b? sung các logic nhu ?n s?n ph?m không phù h?p, tính phí theo k? dóng, và c?p nh?t MAX_ENTRY_AGE, MAX_RENEWAL_AGE, MAX_STBH t? file.
-2. Yêu C?u Chung
-? Ngôn ng? và công ngh?:
-? Front-end: HTML, CSS, JavaScript (c?p nh?t t? index.html, logic.js, data.js, style.css).
-? Thu vi?n: Chrono.js cho ngày tháng; s? d?ng LaTeX (ho?c jsPDF) d? xu?t PDF n?u c?n, nhung uu tiên xu?t HTML tru?c.
-? Font: Noto cho PDF h? tr? ti?ng Vi?t.
-? Giao di?n:
-? Responsive v?i grid layout (s? d?ng Tailwind ho?c style t? style.css).
-? Màu ch? d?o: Ð? AIA (--aia-red: #D9232D).
-? Update logo website m?i ? header trang web.
-? Hi?n th? s? ti?n: Ch? s?, phân cách b?ng d?u ch?m (VD: 500.000.000), không thêm VND.
-? PDF/HTML Xu?t:
-? Xu?t b?ng minh h?a chi ti?t sang HTML tru?c, sau dó h? tr? PDF v?i d?nh d?ng chuyên nghi?p (s? d?ng template LaTeX).
-? N?i dung mi?n tr? trách nhi?m ph?i có trong xu?t (in d?m).
-? Luu ý:
-? Ki?m tra di?u ki?n tham gia (tu?i, nhóm ngh?) d? ?n/hi?n th? s?n ph?m.
-? T?t c? thay d?i (checkbox, input) ph?i refresh tính toán phí ngay l?p t?c (s? d?ng event listeners t? attachGlobalListeners).
-? Làm tròn phí: Theo quy t?c (b?i s? 1000 cho b? sung khi dóng quý/n?a nam).
-? D? li?u d?ng t? HTML truy?n vào xu?t.
-3. Yêu C?u Chi Ti?t
-3.1. Ði?u Ki?n Mua S?n Ph?m Chính
-? PUL Tr?n d?i (PUL_TRON_DOI): Ð? tu?i tham gia t? 30 ngày tu?i d?n t?i da 70 tu?i.
-? PUL 15 nam (PUL_15_NAM): Ð? tu?i tham gia t? 30 ngày tu?i d?n t?i da 70 tu?i.
-? PUL 5 nam (PUL_5_NAM): Ð? tu?i tham gia t? 30 ngày tu?i d?n t?i da 70 tu?i.
-? MUL - Kho? Bình An (KHOE_BINH_AN): Ð? tu?i tham gia t? 30 ngày tu?i d?n t?i da 70 tu?i.
-? MUL - V?ng Tuong Lai (VUNG_TUONG_LAI): Ð? tu?i tham gia t? 30 ngày tu?i d?n t?i da 70 tu?i.
-? Tr?n Tâm An (TRON_TAM_AN):
-? Ð? tu?i tham gia: Nam t? 12 tu?i d?n 60 tu?i, n? t? 28 tu?i d?n 60 tu?i.
-? Không bán cho nhóm ngh? 4.
-? N?u không thu?c d? tu?i ho?c nhóm ngh? không phù h?p, s?n ph?m s? t? d?ng b? ?n.
-? An Bình Uu Vi?t (AN_BINH_UU_VIET):
-? Ð? tu?i tham gia: Nam t? 12 tu?i d?n 65 tu?i, n? t? 28 tu?i d?n 65 tu?i.
-? Gi?i h?n tu?i t?i da theo th?i h?n dóng phí:
-¦ Th?i h?n 5 nam: Tu?i t?i da 65 tu?i.
-¦ Th?i h?n 10 nam: Tu?i t?i da 60 tu?i.
-¦ Th?i h?n 15 nam: Tu?i t?i da 55 tu?i.
-? N?u không thu?c d? tu?i, s?n ph?m s? t? d?ng b? ?n.
-3.2. Giao Di?n HTML (index.html)
-3.2.1. Section 1: Thông Tin Ngu?i Ðu?c B?o Hi?m Chính
-? Các tru?ng nh?p li?u:
-? H? và tên: Input text, b?t bu?c. L?i: "Vui lòng nh?p h? và tên" n?u tr?ng.
-? Ngày sinh: Input text, d?nh d?ng DD/MM/YYYY (s? d?ng Chrono.js). Tính tu?i d?a trên ngày hi?n t?i (09/08/2025). L?i: "Ngày sinh không h?p l?, nh?p DD/MM/YYYY" n?u sai. Hu?ng d?n: "Nh?p theo DD/MM/YYYY" (màu xám).
-? Gi?i tính: Select "Nam", "N?".
-? Ngh? nghi?p: Input text v?i autocomplete t? danh sách trong data.js (occupations). T? d?ng gán nhóm ngh? (1-4). L?i: "Ch?n ngh? nghi?p t? danh sách" n?u không h?p l?.
-? Tu?i: Tính t? d?ng, hi?n th? text (không ch?nh s?a).
-? Nhóm ngh?: Hi?n th? t? d?ng (span class risk-group-span).
-? Logic b? sung: Sau khi nh?p ngh? và tu?i, ki?m tra và ?n s?n ph?m chính không phù h?p (VD: Tr?n Tâm An ?n n?u nhóm 4 ho?c không thu?c d? tu?i quy d?nh).
-3.2.2. Section 2: L?a Ch?n S?n Ph?m Chính
-? S?n ph?m chính: Select v?i l?a ch?n t? data.js. ?n s?n ph?m không phù h?p v?i tu?i và nhóm ngh? (d?a trên di?u ki?n ? 3.1).
-? Th?i h?n dóng phí (payment-term):
-? Input number (không text), hi?n th? ch? cho PUL Tr?n d?i, PUL 15/5 nam, MUL Kho? Bình An/V?ng Tuong Lai.
-? Min: 4 nam; Max: <= (100 - tu?i chính - 1). Hi?n th? g?i ý "Nh?p t? X d?n Y" (màu xám). L?i: "Th?i h?n không h?p l?, t? 4 d?n (100 - tu?i - 1)" n?u sai.
-? Cho An Bình Uu Vi?t: Select 5, 10, 15 nam (n?i dung "b?ng th?i h?n h?p d?ng"). Gi?i h?n tu?i t?i da theo th?i h?n nhu ? 3.1.
-? Cho Tr?n Tâm An: Hi?n th? text "10 nam" (không ch?nh s?a, n?i dung "b?ng th?i h?n h?p d?ng").
-? S? ti?n b?o hi?m (STBH):
-? Input number (không text), hi?n th? cho t?t c? tr? Tr?n Tâm An (STBH c? d?nh 100 tri?u).
-? T? d?ng phân cách d?u ch?m.
-? Khi nh?p, hi?n th? phí chính ngay (tr? MUL Kho? Bình An/V?ng Tuong Lai, vì ph?i nh?p phí chính tru?c).
-? L?i: "STBH nh? hon 100 tri?u" n?u <100tr; "Phí chính nh? hon 5 tri?u" n?u phí tính ra <5tr.
-? Phí s?n ph?m chính:
-? Input number, ch? hi?n th? cho MUL Kho? Bình An/V?ng Tuong Lai.
-? G?i ý min-max theo công th?c (d?a trên STBH và bi?u phí). L?i: "Phí không h?p l?" n?u sai ho?c <5tr.
-? Phí dóng thêm (extra-premium):
-? Input number, hi?n th? cho PUL/MUL (không cho Tr?n Tâm An và An Bình Uu Vi?t). Gi?i h?n <=5 l?n phí chính. L?i: "Phí dóng thêm vu?t quá 5 l?n phí chính".
-? Hi?n th? phí: Phí chính hi?n th? ngay du?i, màu d? AIA. B? ph?n th?i h?n h?p d?ng n?u dã hi?n th? trên.
-? Khi có thay d?i ? Section 1 thì Section 2 c?n refresh và tính l?i cho chính xác
-3.2.3. Section 3: L?a Ch?n S?n Ph?m B? Sung (Cho NÐBH Chính)
-? N?u ch?n Tr?n Tâm An, ch? hi?n th? Bùng Gia L?c, ?n các b? sung khác.
-? S?c kh?e Bùng Gia L?c (health_scl):
-? Checkbox, ?n n?u nhóm ngh? 4 ho?c tu?i n?m ngoài 30 ngày-65 tu?i.
-? B?t bu?c ch?n chuong trình (select: Co b?n, Nâng cao, Toàn di?n, Hoàn h?o). M?c d?nh "Nâng cao" khi checked.
-? STBH c? d?nh: Co b?n 100tr, Nâng cao 250tr, Toàn di?n 500tr, Hoàn h?o 1t?.
-? Select ph?m vi: Vi?t Nam (m?c d?nh), Nu?c ngoài.
-? Gi?i h?n chuong trình: V?i Tr?n Tâm An: T?t c?. V?i các s?n ph?m khác: D?a trên phí chính (5-10tr: Co b?n/Nâng cao; 10-15tr: +Toàn di?n; >=15tr: T?t c?).
-? Checkbox tùy ch?n: Ngo?i trú, Nha khoa (enable khi ch?n chuong trình).
-? Phí nam d?u: Hi?n th? ngay d?a trên bi?u phí (t? health_scl_rates trong data.js), màu d? AIA.
-? B?nh Hi?m Nghèo 2.0 (bhn):
-? Checkbox, ?n n?u tu?i n?m ngoài 30 ngày-70 tu?i.
-? Input STBH number, phân cách d?u ch?m, min 100tr, max 5t?. L?i: "STBH không h?p l?, t? 100 tri?u d?n 5 t?" n?u sai.
-? Phí nam d?u: Tính và hi?n th? ngay d?a trên bi?u phí (tu?i, gi?i tính, STBH /1000 * rate).
-? B?o hi?m Tai n?n (accident):
-? Checkbox, ?n n?u tu?i n?m ngoài 30 ngày-64 tu?i.
-? Input STBH number, min 100tr, max 8t?. L?i: "STBH không h?p l?, t? 100 tri?u d?n 8 t?".
-? Phí nam d?u: Tính d?a trên STBH /1000 * rate theo nhóm ngh? (t? accident_rates), hi?n th? ngay. Phí ch? d?n 65 tu?i.
-? H? tr? chi phí n?m vi?n (hospital_support):
-? Checkbox, ?n n?u tu?i n?m ngoài 30 ngày-55 tu?i.
-? Ði?u ki?n d? tu?i: Áp d?ng cho khách hàng t? 30 ngày tu?i d?n 55 tu?i. N?u không, h? th?ng t? d?ng ?n.
-? S? ti?n h? tr?/ngày (STBH): Input number, làm tròn d?n 100.000, không nh?p l? (ví d?: 150.000).
-? T?ng s? ti?n du?c mua (áp d?ng cho c? NÐBH chính và b? sung):
-¦ Công th?c: Ph?n nguyên c?a (Phí s?n ph?m chính / 4 tri?u) * 100.000 d?ng.
-¦ Gi?i h?n:
-¦ T? 18 tu?i tr? lên: T?i da 1 tri?u/ngày.
-¦ T? 18 tu?i tr? xu?ng: T?i da 300.000/ngày.
-¦ Không du?c vu?t quá t?ng s? ti?n du?c mua dã tính ? trên.
-¦ N?u NÐBH chính dã mua t?i da, NÐBH b? sung không du?c mua thêm.
-? S? ti?n mu?n mua: Khách hàng t? nh?p, ph?i th?a mãn di?u ki?n trên.
-? L?i: "STBH không h?p l?, ph?i là b?i s? 100.000" ho?c "Vu?t quá gi?i h?n cho phép".
-? Phí nam d?u: Tính d?a trên bi?u phí theo d? tu?i (t? hospital_fee_support_rates), hi?n th? ngay.
-? Khi có thay d?i ? Section 1, 2 thì Section 3 c?n refresh và tính l?i cho chính xác.
-3.2.4. Section 4: Ngu?i Ðu?c B?o Hi?m B? Sung
-? N?u s?n ph?m chính là Tr?n Tâm An thì không hi?n th? Section 4. Ngu?i du?c b?o hi?m b? sung.
-? Button "+ Thêm" (t?i da 10 ngu?i). M?i ngu?i có form gi?ng Section 1 + s?n ph?m b? sung gi?ng Section 3 (không ch?n s?n ph?m chính).
-? Logic: Ki?m tra tu?i/nhóm ngh? d? ?n s?n ph?m b? sung cho t?ng ngu?i. T?i da 10, button xóa t?ng ngu?i.
-3.2.5. Section 5: Mi?n Ðóng Phí 3.0 - Dành cho bên mua BH
-? N?u s?n ph?m chính là Tr?n Tâm An thì không hi?n th? Section 5: mi?n dóng phí 3.0. 
-? Radio: Li?t kê NÐBH b? sung (tên + tu?i) dã du?c nh?p ? trên ?n n?u không có ai trong 18-60 tu?i, + "Ngu?i khác" (hi?n th? form d?y d?: tên, sinh, gi?i tính, ngh? v?i autocomplete). Ph?i tho? mãn d? tu?i t? 18 - 60 tu?i.
-? STBH t? d?ng: (Phí s?n ph?m chính + t?ng phí s?n ph?m b? sung c?a NDBH chính + phí s?n ph?m b? sung c?a t?t c? ngu?i du?c b?o hi?m b? sung) - phí s?n ph?m b?o hi?m b? sung c?a ngu?i du?c du?c b?o hi?m b? sung v?a du?c ch?n trong danh sách. N?u "Ngu?i khác": Thì không c?n tr? phí s?n ph?m b?o hi?m b? sung c?a ngu?i du?c b?o hi?m b? sung v?a du?c ch?n trong danh sách.
-? Phí: M?t l?n c? d?nh, nam nào cung gi?ng nhau, d?a trên b?ng phí tu?i/gi?i tính (t? Bi?u phí s?n ph?m mi?n thu phí 3.0). Áp d?ng d?n 65 tu?i c?a ngu?i ch?n.
-? Tính vào t?ng phí b? sung du?c hi?n th? ? Section 6, hi?n th? riêng trong tóm t?t n?u "Ngu?i khác".
-? Hi?n th? phí ngay, màu d? AIA.
-3.2.6. Section 6: Tóm T?t Phí B?o Hi?m
-? Hi?n th?:
-? Phí s?n ph?m chính (t? Section 2).
-? Phí dóng thêm (n?u có t? Section 2).
-? T?ng phí b? sung (t?t c? b? sung + Mi?n dóng phí 3.0).
-? T?ng phí nam d?u (chính + dóng thêm + b? sung).
-? K? dóng phí: Select Nam (m?c d?nh), N?a nam, Quý.
-? N?u Nam: Không hi?n th? thêm.
-? N?u Quý/N?a: Hi?n th? phí theo k?, t?ng theo k?, t?ng nam (n?a x2, quý x4), chênh l?ch (t?ng nam theo k? - t?ng nam dóng nam).
-? Công th?c: Chính/dóng thêm: N?a = nam/2, Quý = nam/4. B? sung: N?a = (nam/1000 *1.02 /2) round *1000; Quý = (nam/1000 *1.04 /4) round *1000.
-? Minh h?a phí d?n nam:
-? Input number. M?c d?nh: Tu?i ngu?i du?c BH chính + nam dóng phí -1 (min); Max 100.
-? Cho Tr?n Tâm An: Tu?i ngu?i du?c BH chính +10 -1 (không s?a).
-? Cho An Bình Uu Vi?t: Tu?i ngu?i du?c BH chính + th?i h?n ch?n -1 (không s?a).
-? L?i: "Không h?p l?, t? X d?n 100" n?u sai.
-? Khi có b?t k? action nào thay d?i ? các section 1,2,3,4,5 thì Section 6 c?n du?c tính l?i toàn b? các thông s? d? hi?n th? chính xác. 
-? Nút "B?ng minh h?a chi ti?t": M? modal/HTML v?i tóm t?t và b?ng phí.
-3.2.7. Modal/HTML: B?ng Minh H?a Chi Ti?t
-? Tóm t?t s?n ph?m:
-? B?ng: Tên NÐBH | S?n ph?m | STBH | Nam dóng phí | Phí dóng.
-? Ví d?: NÐBH chính | PUL 5 nam | 1.000.000.000 | 5 | 20.000.000
-? Phí dóng thêm: Không STBH, nam = payment-term.
-? B? sung: Nam = min(d?n nam nh?p, tu?i max b?o v?) - tu?i +1 (Bùng Gia L?c 75, B?nh 85, Tai n?n/H? tr?/Mi?n dóng phí 65).
-? B?ng phí:
-? C?t: Nam HD | Tu?i NÐBH chính | Phí chính | Phí dóng thêm | Phí b? sung (tên NÐBH chính) | Phí b? sung (tên NÐBH b? sung) | T?ng c?ng | Chênh l?ch so v?i nam (n?u quý/n?a).
-? Áp d?ng phí b? sung theo k? n?u ch?n quý/n?a.
-? Phí =0 n?u vu?t tu?i max (Bùng Gia L?c 75, B?nh hi?m nghèo 85, Tai n?n/H? tr? vi?n phí/Mi?n dóng phí 65).
-? Mi?n tr?: Cu?i, in d?m: 
-Công c? này ch? mang tính ch?t tham kh?o cá nhân, không ph?i là b?ng minh h?a chính th?c c?a AIA. Quy?n l?i và m?c phí c? th? s? du?c xác nh?n trong h?p d?ng do AIA phát hành. Vui lòng liên h? tu v?n viên AIA d? du?c tu v?n chi ti?t và nh?n b?ng minh h?a chính th?c
-3.2.8. Footer
-? Mi?n tr? trách nhi?m gi?ng modal, in d?m cu?i trang.
-? Công c? này ch? mang tính ch?t tham kh?o cá nhân, không ph?i là b?ng minh h?a chính th?c c?a AIA. Quy?n l?i và m?c phí c? th? s? du?c xác nh?n trong h?p d?ng do AIA phát hành. Vui lòng liên h? tu v?n viên AIA d? du?c tu v?n chi ti?t và nh?n b?ng minh h?a chính th?c
-3.3.9 T?ng h?p phí c?a các s?n ph?m và nhóm ngh?:
-a. Danh sách và phân lo?i nhóm ngh?:
-? D?ch v?/Thuong m?i:
-¦ Nhóm 1: Qu?n lý nhà hàng/khách s?n quy mô l?n, qu?c t?; Qu?n lý, di?u hành; Qu?n lý d?ch v? v? sinh.
-¦ Nhóm 2: Ch? d?ch v? cho thuê; Ch?/Qu?n lý nhà hàng, khách s?n quy mô nh?; Buôn bán, kinh doanh t?i d?a di?m c? d?nh; Buôn bán, kinh doanh t?i lô, s?p ? ch?; Kinh doanh ki?u h?i, kim lo?i dá quý; Kinh doanh b?t d?ng s?n; Tu v?n, môi gi?i, Ð?i lý b?o hi?m; Nhân viên kinh doanh, bán hàng; Kinh doanh du?c ph?m; Nhân viên kinh doanh tín d?ng tín ch?p, th? ch?p; Th? làm tóc/Làm móng/Trang di?m/Ch? co s?.
-¦ Nhóm 3: Buôn bán, kinh doanh luu d?ng; Nhân viên làm vi?c tr?m xang d?u; Giúp vi?c nhà; Pha ch?.
-¦ Nhóm 4: Nhân viên/Th? l?p d?t, s?a ch?a, b?o hành, b?o trì; Công nhân cham sóc cây xanh; Công nhân v? sinh du?ng ph?, công c?ng; Nhân viên giao hàng/Buu tá; Ð?u b?p, th? n?u.
-? Ngành giao thông v?n t?i:
-¦ Nhóm 1: Nhân viên th? t?c/ph?c v? hành khách; Nhân viên di?u d? ch?y tàu tuy?n/ga.
-¦ Nhóm 2: Nhân viên di?u khi?n không luu; Nhân viên m?t d?t; An ninh hàng không; Tru?ng tàu.
-¦ Nhóm 3: Ti?p viên hàng không; Phi công máy bay thuong m?i; Nhân viên d?ch v? v? sinh; Lái tàu/Ph? lái.
-¦ Nhóm 4: Tài x? xe buýt/khách/t?i; Tài x? xe g?n máy/ba gác; Nhân viên giao nh?n/v?n t?i.
-? Khai thác/S?n xu?t/Xây d?ng/X? lý ch?t th?i:
-¦ Nhóm 1: Ki?n trúc su; Thi?t k?; K? su xây d?ng; Nhân viên van phòng/Giám d?c/Qu?n lý nhà máy.
-¦ Nhóm 2: K? su môi tru?ng; K? su nhà máy; Qu?n lý, giám sát công trình; Qu?n d?c, d?c công; K? su ch? t?o/K? su công nghi?p.
-¦ Nhóm 3: S?n xu?t bao bì; D?t may; S?n xu?t giày dép; Ch? bi?n th?y s?n/nông s?n; S?n xu?t bia/du?ng.
-¦ Nhóm 4: Công nhân co khí; Th? máy; K? thu?t, b?o trì; Công nhân xây d?ng, thi công; Th? h?.
-? Hành chính van phòng:
-¦ Nhóm 1: Ban giám d?c; Nhân viên van phòng; K? su công ngh? thông tin.
-? Nông Lâm Ngu Nghi?p:
-¦ Nhóm 1: Nghiên c?u, dào t?o, hu?ng d?n.
-¦ Nhóm 3: Nuôi tr?ng th?y h?i s?n; Làm ru?ng/Tr?ng tr?t/Chan nuôi; Làm mu?i.
-¦ Nhóm 4: Tr?ng r?ng, cao su; Ðánh b?t cá ? sông h?.
-? Ngh? thu?t/Truy?n thông/Th? thao/Du l?ch:
-¦ Nhóm 1: Tác gi? truy?n, tho, van; Qu?n lý/T?ng biên t?p; Ngu?i ch? huy dàn nh?c; Di?n viên l?ng ti?ng; Th? thao trí tu?, bida.
-¦ Nhóm 2: Hu?ng d?n viên du l?ch; Nh?c si, nh?c công bi?u di?n ? nhà hát; Th? thao dùng v?t/Golf/Bowling.
-¦ Nhóm 3: Bi?u di?n luu d?ng; Ði?n kinh/Th? d?c/Th? hình.
-¦ Nhóm 4: Ðua xe d?p ho?c thi?t b? chuy?n d?ng du?c nh? d?p.
-? Tu pháp/Quân d?i/C?nh sát/B?o v?:
-¦ Nhóm 1: Tu v?n lu?t/Lu?t su/Th?m phán/Công t? viên; C?p lãnh d?o, ch? huy.
-¦ Nhóm 2: Si quan không thu?c d?c công/d?c nhi?m.
-¦ Nhóm 3: Thi hành án.
-¦ Nhóm 4: Ði?u ph?i giao thông; Tu?n tra, gi? gìn an ninh tr?t t?.
-? Công vi?c khác:
-¦ Nhóm 1: Tr? em; Tu hành; Th?y cúng; Th?y phong th?y, Tu si.
-¦ Nhóm 2: Huu trí; N?i tr?, Sinh viên.
-¦ Nhóm 4: Lao d?ng t? do.
-B. Phí s?n ph?m An Bình Uu Vi?t
-? Th?i h?n dóng phí 5 nam: Bi?u phí này tính trên 1.000 d?ng s? ti?n b?o hi?m.
-Tu?iNamN?124,20134,19144,17154,16164,16174,17184,17194,17204,22214,26224,28234,29244,31254,33264,34274,36284,393,71294,443,73304,523,75314,623,78324,773,84334,963,93345,164,05355,374,20365,554,37375,794,55386,024,70396,274,88406,545,08416,855,30427,185,52437,545,76447,936,03458,366,31468,816,62479,316,94489,887,304910,497,695011,328,235112,218,825213,249,485314,4110,225415,7711,155517,4312,335618,8213,195720,4114,155822,2915,325924,1516,496026,1917,836128,5119,366231,1321,056334,0922,976437,0224,876540,2127,03
-? Th?i h?n dóng phí 10 nam: Bi?u phí tính trên 1.000 d?ng s? ti?n b?o hi?m
-
-Tu?iNamN?123,55133,66143,77153,87163,96174,06184,20194,22204,28214,32224,35234,35244,36254,38264,40274,42284,443,75294,503,77304,573,79314,683,83324,833,89335,013,97345,214,09355,424,24365,644,40375,904,57386,184,76396,484,97406,815,21417,195,47427,625,74438,076,04448,576,36459,126,71469,757,124710,467,574811,248,044912,118,585013,079,175114,149,915215,3510,655316,7111,465418,2512,455520,0413,685621,7614,755723,6915,955825,8917,335928,1118,746030,5220,29
-? Th?i h?n dóng phí 15 nam: Bi?u phí tính trên 1.000 d?ng s? ti?n b?o hi?m
-
-Tu?iNamN?123,64133,73143,83153,92164,00174,09184,21194,23204,29214,34224,38234,40244,44254,47264,51274,56284,613,84294,703,88304,813,93314,954,00325,144,09335,374,21345,614,37355,884,55366,174,75376,634,97387,015,22397,435,49407,785,82418,296,16428,866,52439,496,904410,177,324510,917,774611,738,254712,648,784813,649,374914,7410,045015,9410,755117,3011,585218,8112,515320,4913,545422,3514,705524,4516,07Ví d?: Nam 35 tu?i, dóng phí 5 nam, s? ti?n b?o hi?m là 1 t?. Thì phí b?o hi?m ph?i dóng là 1.000.000.000 / 1.000 * 5.37 = 5.370.000 d?ng.
-? Tính t?ng phí b?o hi?m d?n nam: T? d?ng c?ng s? tu?i c?a khách hàng v?i th?i h?n dóng phí dã ch?n. Không cho thay d?i
-? S?n ph?m b? sung: Ðu?c phép ch?n s?n ph?m Bùng gia l?c, B?nh hi?m nghèo 2.0, Tai n?n và H? tr? vi?n phí (n?u d? di?u ki?n).
-
-C. Phí s?n ph?m PUL tr?n d?i, PUL 5 nam, PUL 15 nam: Tính theo b?ng bi?u phí bên du?i.
-PUL Tr?n d?iPUL Tr?n d?iPUL 15 namPUL 15 namPUL 5 namPUL 5 namTu?iNamN?NamN?NamN?06,15,76,15,77,86,016,15,76,15,77,86,026,15,76,15,77,86,036,15,76,15,77,86,046,15,76,15,77,86,056,15,76,15,77,96,266,15,76,15,78,16,376,15,86,15,88,16,386,25,86,25,88,56,496,25,86,25,88,86,8106,35,96,35,99,17,0116,35,96,35,99,47,3126,36,06,36,09,87,5136,46,06,46,09,87,8146,46,06,46,010,38,1156,56,16,56,110,78,3166,56,16,56,111,48,8176,56,16,56,111,59,2186,66,26,66,212,39,6196,66,26,66,212,59,8206,76,36,76,313,010,5216,86,36,86,313,611,0226,86,46,86,414,511,6236,96,56,96,515,312,2247,06,67,06,616,212,8257,16,77,16,717,113,5267,26,87,26,818,014,3277,46,97,46,919,114,9287,57,17,57,120,615,9297,67,27,67,221,816,9307,77,47,77,423,617,6317,97,68,27,625,318,3328,17,89,07,827,019,4338,37,99,97,928,920,6348,58,110,58,131,722,1358,78,311,18,334,023,4369,18,711,88,736,625,2379,59,112,59,139,226,73810,09,513,59,542,328,53910,510,014,610,145,330,54011,110,515,710,849,433,34111,510,916,911,552,634,94211,911,218,212,256,137,84312,311,619,613,162,140,94412,812,021,314,466,243,14513,312,523,015,571,447,34614,313,324,616,877,250,84715,414,326,717,480,554,54816,715,429,419,688,558,64918,216,731,121,693,863,55020,018,232,623,1100,668,75121,319,236,225,3106,773,45222,720,436,227,2112,777,95324,421,740,129,4119,687,05426,323,342,531,3126,291,05528,625,045,333,3132,499,35630,326,349,435,4138,3105,05732,327,851,238,5144,5113,15834,529,453,241,7152,7118,95937,031,357,245,0157,5131,06040,033,358,845,9164,1134,66141,734,562,547,1169,6141,36243,535,766,052,1176,4152,26345,537,068,056,0183,1160,16447,638,571,058,5187,4165,76555,643,574,062,5192,3171,86662,547,676,765,4196,2178,96771,452,680,268,7202,4186,76883,358,883,171,2205,7190,969100,066,7111,183,3222,3196,770100,066,7125,0100,0250,0250,0Ví d?: khi nh?p s? ti?n b?o hi?m là 1 t?, 35 tu?i, nam gi?i thì PUL tr?n d?i là 1.000.000.000 / 1.000 * 8.7 = 8.700.000 (8,7 ?ng v?i b?ng trên h? s?)
-
-D. Kho? Bình An và V?ng Tuong lai: 
-Nh?p s? phí n?m trong kho?ng phí t?i thi?u và t?i da du?c tính toán d?a trên b?ng h? s? du?i dây.
-
-Tu?i phát hànhH? s? b?o hi?m t?i thi?uH? s? b?o hi?m t?i da0 - 95515010 - 164515017 - 194015020 - 293514030 - 342512035 - 392010040 - 44207045 - 49205050 - 54154055 - 5982060 - 70510
-? Ví d? s? ti?n b?o hi?m là 1 t?, nam gi?i, 35 tu?i thì s? phí b?o hi?m ph?i dóng t?i da = 1.000.000.000 / 20 = 50.000.000 và s? ti?n b?o hi?m dóng t?i thi?u = 1.000.000.000 / 100 = 10.000.000
-E. Phí s?n ph?m Bùng Gia L?c
-Ðon v? tính: d?ng
-
-Quy?n l?i chính - Ph?m vi d?a lý Vi?t Nam
-Tu?i NÐBHCo b?nNâng caoToàn di?nHoàn h?o0-43.829.0007.669.00013.909.00020.149.0005-91.459.0002.929.0005.449.0007.859.00010-14769.0001.489.0002.719.0004.019.00015-191.079.0002.159.0003.939.0005.719.00020-241.239.0002.579.0004.719.0006.779.00025-291.579.0003.069.0005.649.0008.229.00030-341.939.0003.359.0006.149.0009.039.00035-392.139.0003.839.0007.019.00010.099.00040-442.359.0004.229.0007.789.00011.349.00045-492.909.0005.089.0009.329.00013.559.00050-543.279.0006.039.00011.009.00016.069.00055-593.479.0006.799.00012.459.00018.029.00060-643.939.0007.809.00014.159.00020.579.000654.269.0008.339.00015.209.00022.079.00066-694.269.0008.339.00015.209.00022.079.00070-744.679.0009.209.00016.759.00024.309.000
-
-Quy?n l?i chính - Ph?m vi d?a lý: Toàn c?u (tr? Hoa K?)
-Tu?i NÐBHCo b?nNâng caoToàn di?nHoàn h?o0-45.149.00010.309.00018.709.00027.229.0005-91.969.0003.939.0007.269.00010.489.00010-141.029.0002.009.0003.699.0005.449.00015-191.469.0002.929.0005.329.0007.739.00020-241.689.0003.469.0006.339.0009.099.00025-292.069.0004.159.0007.629.00011.059.00030-342.299.0004.509.0008.269.00012.209.00035-392.589.0005.189.0009.429.00013.659.00040-442.879.0005.669.00010.479.00015.299.00045-493.449.0006.829.00012.599.00018.279.00050-544.159.0008.129.00014.879.00021.729.00055-594.709.0009.199.00016.789.00024.299.00060-645.329.00010.519.00019.109.00027.779.000655.759.00011.269.00020.519.00029.799.00066-695.759.00011.269.00020.519.00029.799.00070-746.219.00012.289.00022.379.00032.419.000
-Quy?n l?i Ði?u tr? ngo?i trú (Tùy ch?n)
-Tu?i NÐBHCo b?nNâng caoToàn di?nHoàn h?o0-41.889.0003.559.0007.649.00011.349.0005-9979.0001.849.0003.989.0005.919.00010-14869.0001.629.0003.519.0005.219.00015-19889.0001.689.0003.629.0005.389.00020-24799.0001.529.0003.279.0004.869.00025-29859.0001.619.0003.489.0005.179.00030-34939.0001.779.0003.819.0005.669.00035-391.009.0001.909.0004.119.0006.109.00040-441.029.0001.939.0004.189.0006.209.00045-491.089.0002.049.0004.419.0006.559.00050-541.089.0002.059.0004.449.0006.589.00055-591.109.0002.089.0004.509.0006.699.00060-641.119.0002.099.0004.529.0006.729.000651.119.0002.109.0004.549.0006.769.00066-691.119.0002.109.0004.549.0006.769.00070-741.409.0002.659.0005.719.0008.479.000
-Quy?n l?i Cham sóc nha khoa (Tùy ch?n)
-Tu?i NÐBHCo b?nNâng caoToàn di?nHoàn h?o0-4509.000939.0002.189.0004.009.0005-9869.0001.619.0003.749.0006.869.00010-14779.0001.449.0003.359.0006.149.00015-19709.0001.329.0003.079.0005.649.00020-24579.0001.089.0002.539.0004.639.00025-29579.0001.079.0002.519.0004.599.00030-34599.0001.129.0002.629.0004.819.00035-39629.0001.189.0002.749.0005.039.00040-44719.0001.349.0003.129.0005.729.00045-49759.0001.429.0003.309.0006.069.00050-54739.0001.389.0003.209.0005.889.00055-59729.0001.379.0003.179.0005.839.00060-74729.0001.379.0003.179.0005.839.000
-F. Phí s?n ph?m B?nh hi?m nghèo 2.0:
-Tu?iNamN?01.981.4711.981.4721.981.4731.981.4741.981.4751.491.1661.491.1671.491.1681.491.1691.491.16101.641.24111.641.24121.641.24131.641.24141.641.24151.351.08161.351.08171.351.08181.381.10191.381.10201.601.32211.601.32221.111.04231.111.04241.111.04251.341.45261.341.45271.341.45281.341.45291.341.45302.022.22312.022.22322.022.22332.022.22342.022.22353.343.76363.343.76373.343.76383.343.76393.343.76405.375.75415.375.75425.375.75435.375.75445.375.75458.678.86468.678.86478.678.86488.678.86498.678.865012.4111.885112.4111.885212.4111.885312.4111.885412.4111.885519.2218.265619.2218.265719.2218.265819.2218.265919.2218.266028.3126.426128.3126.426228.3126.426328.3126.426428.3126.426535.5131.316635.5131.316735.5131.316835.5131.316935.5131.317047.5543.067146.4342.707246.4342.707346.4342.707446.4342.707574.0565.407674.0565.407774.0565.407874.0565.407974.0565.4080108.5293.5481108.5293.5482108.5293.5483108.5293.5484108.5293.5485126.75109.46
-Ví d? khách hàng nam, 35 tu?i, s? ti?n b?o hi?m là 500 tri?u, thì phí c?a b?nh hi?m nghèo = 500.000.000 / 1.000 * 3.34 = 1.670.000
-
-
-G. Phí s?n ph?m Tai n?n:
-
-Nhóm ngh?M?c phí b?o hi?m hàng nam trên 1.000 d?ng s? ti?n b?o hi?m13.3724.5438.37412.16
-H. Phí s?n ph?m H? tr? vi?n phí:
-Tu?iPhí b?o hi?m g?p cho 100 d?ng b?o hi?m1-41815-3415535-3918940-4423045-5539856-59398
-I. Phí s?n ph?m Mi?n dóng phí 3.0
-Phí tính trên 1.000 d?ng s? ti?n b?o hi?m.
-Tu?iNamN?1840.2226.771941.3927.182042.427.692143.2728.392243.8328.942344.2129.332444.5629.532544.8129.562645.0229.62745.2529.62845.4429.562945.929.523046.5229.533147.4429.623248.7829.823350.2630.173451.7630.783553.1931.523654.5732.233756.0532.933857.5233.623958.934.434060.2535.254161.636.074263.0336.884364.4537.684465.7538.524566.9939.324668.1840.054769.4140.674870.5941.24971.4541.75072.2542.175172.8242.385273.3742.415373.7142.275473.3342.025573.1441.995672.3841.485771.5540.695870.5939.755969.2439.016071.7140.52
-
