@@ -47,16 +47,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== MDP3 BỔ SUNG =====
     if (window.MDP3) MDP3.init();
 });
-
 function attachGlobalListeners() {
     const allInputs = 'input, select';
+
+    // Lắng nghe sự kiện 'change'
     document.body.addEventListener('change', (e) => {
+        // ===== SỬA ĐỔI: Thêm logic reset MDP3 khi có thay đổi ở NĐBHBS =====
+        const personContainer = e.target.closest('.person-container');
+        // Nếu thay đổi xảy ra trong container của NĐBHBS (không phải NĐBH chính hay form 'Người khác' của MDP3)
+        if (personContainer && personContainer.id !== 'main-person-container' && !personContainer.id.includes('mdp3-other')) {
+            resetMdp3Checkbox();
+        }
+        // ===================================================================
+
         const checkboxSelectors = [
             '.health-scl-checkbox',
             '.bhn-checkbox',
             '.accident-checkbox',
             '.hospital-support-checkbox'
         ];
+
         if (checkboxSelectors.some(selector => e.target.matches(selector))) {
             const section = e.target.closest('.product-section');
             const options = section.querySelector('.product-options');
@@ -70,7 +80,16 @@ function attachGlobalListeners() {
             calculateAll();
         }
     });
+
+    // Lắng nghe sự kiện 'input'
     document.body.addEventListener('input', (e) => {
+        // ===== SỬA ĐỔI: Thêm logic reset MDP3 khi có thay đổi ở NĐBHBS =====
+         const personContainer = e.target.closest('.person-container');
+        if (personContainer && personContainer.id !== 'main-person-container' && !personContainer.id.includes('mdp3-other')) {
+            resetMdp3Checkbox();
+        }
+        // ===================================================================
+
         if (e.target.matches('input[type="text"]') && !e.target.classList.contains('dob-input') &&
             !e.target.classList.contains('occupation-input') &&
             !e.target.classList.contains('name-input')) {
