@@ -20,21 +20,7 @@ const MAX_STBH = {
 
 // Ngày tham chiếu tính tuổi
 const REFERENCE_DATE = new Date(2025, 7, 9); // tháng 8 là index 7
-// ===== MỚI: Hàm chuyên dụng để reset checkbox Miễn Đóng Phí =====
-/**
- * Tìm và bỏ chọn checkbox MDP3, sau đó kích hoạt sự kiện 'change'
- * để ẩn các tùy chọn của nó. Đây là một cơ chế an toàn.
- */
-function resetMdp3Checkbox() {
-    if (!window.MDP3) return;
-    const checkbox = document.getElementById('mdp3-enable');
-    // Chỉ thực hiện nếu checkbox đang được chọn
-    if (checkbox && checkbox.checked) {
-        checkbox.checked = false;
-        // Kích hoạt sự kiện 'change' để module MDP3 tự xử lý việc ẩn UI của nó
-        checkbox.dispatchEvent(new Event('change'));
-    }
-}
+
 document.addEventListener('DOMContentLoaded', () => {
     initPerson(document.getElementById('main-person-container'), 'main');
     initMainProductLogic();
@@ -47,26 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== MDP3 BỔ SUNG =====
     if (window.MDP3) MDP3.init();
 });
+
 function attachGlobalListeners() {
     const allInputs = 'input, select';
-
-    // Lắng nghe sự kiện 'change'
     document.body.addEventListener('change', (e) => {
-        // ===== SỬA ĐỔI: Thêm logic reset MDP3 khi có thay đổi ở NĐBHBS =====
-        const personContainer = e.target.closest('.person-container');
-        // Nếu thay đổi xảy ra trong container của NĐBHBS (không phải NĐBH chính hay form 'Người khác' của MDP3)
-        if (personContainer && personContainer.id !== 'main-person-container' && !personContainer.id.includes('mdp3-other')) {
-            resetMdp3Checkbox();
-        }
-        // ===================================================================
-
         const checkboxSelectors = [
             '.health-scl-checkbox',
             '.bhn-checkbox',
             '.accident-checkbox',
             '.hospital-support-checkbox'
         ];
-
         if (checkboxSelectors.some(selector => e.target.matches(selector))) {
             const section = e.target.closest('.product-section');
             const options = section.querySelector('.product-options');
@@ -79,17 +55,22 @@ function attachGlobalListeners() {
         } else if (e.target.matches(allInputs)) {
             calculateAll();
         }
-    });
 
-    // Lắng nghe sự kiện 'input'
-    document.body.addEventListener('input', (e) => {
-        // ===== SỬA ĐỔI: Thêm logic reset MDP3 khi có thay đổi ở NĐBHBS =====
-         const personContainer = e.target.closest('.person-container');
-        if (personContainer && personContainer.id !== 'main-person-container' && !personContainer.id.includes('mdp3-other')) {
-            resetMdp3Checkbox();
+        // ===== MDP3 BỔ SUNG ===== reset nếu thay đổi ngoài khu MDP3 và thuộc phạm vi cần reset
+        if (window.MDP3 && !e.target.closest('#mdp3-section')) {
+            const resetSelectors = [
+                '.dob-input',
+                '.health-scl-checkbox', '.health-scl-program', '.health-scl-scope', '.health-scl-outpatient', '.health-scl-dental',
+                '.bhn-checkbox', '.bhn-stbh',
+                '.accident-checkbox', '.accident-stbh',
+                '.hospital-support-checkbox', '.hospital-support-stbh'
+            ];
+            if (resetSelectors.some(sel => e.target.matches(sel))) {
+                MDP3.resetIfEnabled();
+            }
         }
-        // ===================================================================
-
+    });
+    document.body.addEventListener('input', (e) => {
         if (e.target.matches('input[type="text"]') && !e.target.classList.contains('dob-input') &&
             !e.target.classList.contains('occupation-input') &&
             !e.target.classList.contains('name-input')) {
@@ -97,6 +78,17 @@ function attachGlobalListeners() {
             calculateAll();
         } else if (e.target.matches('input[type="number"]')) {
             calculateAll();
+        }
+
+        // ===== MDP3 BỔ SUNG ===== reset khi gõ DOB/STBH SPBS (ngoài khu MDP3)
+        if (window.MDP3 && !e.target.closest('#mdp3-section')) {
+            const resetSelectors = [
+                '.dob-input',
+                '.bhn-stbh', '.accident-stbh', '.hospital-support-stbh'
+            ];
+            if (resetSelectors.some(sel => e.target.matches(sel))) {
+                MDP3.resetIfEnabled();
+            }
         }
     });
 }
@@ -118,7 +110,8 @@ function initPerson(container, personId, isSupp = false) {
 
         dobInput?.addEventListener('blur', validateMainPersonInputs);
         dobInput?.addEventListener('input', validateMainPersonInputs);
-        dobInput?.addEventListener('input', () => { if (window.MDP3) MDP3.renderSelect(); });
+        // ===== MDP3 BỔ SUNG ===== sửa DOB của NĐBH chính -> reset nếu đang bật
+        dobInput?.addEventListener('input', () => { if (window.MDP3) MDP3.resetIfEnabled(); });
 
         occInput?.addEventListener('input', validateMainPersonInputs);
         occInput?.addEventListener('blur', validateMainPersonInputs);
@@ -149,8 +142,6 @@ function initPerson(container, personId, isSupp = false) {
 
         const handleMainCheckboxChange = () => {
             const isChecked = mainCheckbox.checked && !mainCheckbox.disabled;
-            programSelect.disabled = !isChecked;
-            scopeSelect.disabled = !isChecked;
             const options = sclSection.querySelector('.product-options');
             options.classList.toggle('hidden', !isChecked);
             if (isChecked) {
@@ -203,6 +194,8 @@ function initPerson(container, personId, isSupp = false) {
 function initMainProductLogic() {
     document.getElementById('main-product').addEventListener('change', () => {
         updateSupplementaryAddButtonState();
+        // ===== MDP3 BỔ SUNG ===== đổi SP chính -> reset MDP3
+        if (window.MDP3) MDP3.reset();
         calculateAll();
     });
 }
@@ -236,14 +229,11 @@ function initSupplementaryButton() {
         container.appendChild(newPersonDiv);
         initPerson(newPersonDiv, personId, true);
         updateSupplementaryAddButtonState();
-        
-        // ===== SỬA ĐỔI: Reset MDP3 khi thêm người mới =====
-        resetMdp3Checkbox();
-        
-        calculateAll();
 
-        // ===== MDP3 BỔ SUNG ===== render lại danh sách
-        if (window.MDP3) MDP3.renderSelect();
+        // ===== MDP3 BỔ SUNG ===== thêm người -> reset MDP3 trước khi tính
+        if (window.MDP3) MDP3.reset();
+
+        calculateAll();
     });
 }
 function initSummaryModal() {
@@ -1415,12 +1405,10 @@ function updateHealthSclStbhInfo(section) {
     const stbh = getHealthSclStbhByProgram(program);
     infoEl.textContent = program ? `STBH: ${formatCurrency(stbh, '')}` : '';
 }
+
 function generateSupplementaryPersonHtml(personId, count) {
-    // ===== SỬA ĐỔI: Thêm hàm resetMdp3Checkbox vào nút Xóa =====
-    const deleteAction = `this.closest('.person-container').remove(); updateSupplementaryAddButtonState(); resetMdp3Checkbox(); calculateAll(); if (window.MDP3) MDP3.renderSelect();`;
-    
     return `
-        <button class="w-full text-right text-sm text-red-600 font-semibold" onclick="${deleteAction}">Xóa NĐBH này</button>
+        <button class="w-full text-right text-sm text-red-600 font-semibold" onclick="this.closest('.person-container').remove(); if (window.MDP3) MDP3.reset(); updateSupplementaryAddButtonState(); calculateAll();">Xóa NĐBH này</button>
         <h3 class="text-lg font-bold text-gray-700 mb-2 border-t pt-4">NĐBH Bổ Sung ${count}</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -1544,6 +1532,26 @@ window.MDP3 = (function () {
         attachListeners();
     }
 
+    // ===== MDP3 BỔ SUNG ===== tiện ích reset
+    function reset() {
+        selectedId = null;
+        const enableCb = document.getElementById('mdp3-enable');
+        if (enableCb) enableCb.checked = false;
+
+        const selContainer = document.getElementById('mdp3-select-container');
+        if (selContainer) selContainer.innerHTML = '';
+
+        const feeEl = document.getElementById('mdp3-fee-display');
+        if (feeEl) feeEl.textContent = '';
+    }
+    function isEnabled() {
+        const cb = document.getElementById('mdp3-enable');
+        return !!(cb && cb.checked);
+    }
+    function resetIfEnabled() {
+        if (isEnabled()) reset();
+    }
+
     // Hiện/ẩn Section 5 tùy sản phẩm chính
     function renderSection() {
         const sec = document.getElementById('mdp3-section');
@@ -1551,6 +1559,7 @@ window.MDP3 = (function () {
         const mainProduct = document.getElementById('main-product').value;
 
         if (mainProduct === 'TRON_TAM_AN') {
+            reset();
             sec.classList.add('hidden');
             return;
         }
@@ -1607,15 +1616,20 @@ window.MDP3 = (function () {
     // Gắn sự kiện cho checkbox và dropdown
     function attachListeners() {
         // Render lại Section khi đổi sản phẩm chính
-        document.getElementById('main-product').addEventListener('change', renderSection);
+        document.getElementById('main-product').addEventListener('change', () => {
+            renderSection();
+            reset(); // đổi SP chính -> luôn reset
+        });
 
         document.body.addEventListener('change', function (e) {
             if (e.target.id === 'mdp3-enable') {
                 if (e.target.checked) {
                     renderSelect();
                 } else {
-                    document.getElementById('mdp3-select-container').innerHTML = '';
-                    document.getElementById('mdp3-fee-display').textContent = '';
+                    const sel = document.getElementById('mdp3-select-container');
+                    if (sel) sel.innerHTML = '';
+                    const fee = document.getElementById('mdp3-fee-display');
+                    if (fee) fee.textContent = '';
                 }
             }
 
@@ -1653,7 +1667,20 @@ window.MDP3 = (function () {
 
     // Tính phí MDP3
     function getPremium() {
-        if (!selectedId || !window.personFees) return 0;
+        const enableCb = document.getElementById('mdp3-enable');
+        const feeEl = document.getElementById('mdp3-fee-display');
+        if (!enableCb || !enableCb.checked) {
+            if (feeEl) feeEl.textContent = '';
+            return 0;
+        }
+        if (!selectedId || !window.personFees) {
+            if (feeEl) feeEl.textContent = '';
+            return 0;
+        }
+        if (selectedId !== 'other' && !document.getElementById(selectedId)) {
+            reset();
+            return 0;
+        }
 
         // Tính STBH: phí chính thuần + phí bổ sung (không cộng extra premium)
         let stbhBase = 0;
@@ -1675,8 +1702,7 @@ window.MDP3 = (function () {
 
             // Nếu chưa có DOB hợp lệ → chỉ hiển thị STBH
             if (!age || age <= 0) {
-                document.getElementById('mdp3-fee-display').textContent =
-                    `STBH: ${formatCurrency(stbhBase)} | Phí: —`;
+                if (feeEl) feeEl.textContent = `STBH: ${formatCurrency(stbhBase)} | Phí: —`;
                 return 0;
             }
         } else {
@@ -1689,9 +1715,11 @@ window.MDP3 = (function () {
         const rate = findMdp3Rate(age, gender);
         const premium = Math.round((stbhBase / 1000) * rate);
 
-        document.getElementById('mdp3-fee-display').textContent = premium > 0
-            ? `STBH: ${formatCurrency(stbhBase)} | Phí: ${formatCurrency(premium)}`
-            : `STBH: ${formatCurrency(stbhBase)} | Phí: —`;
+        if (feeEl) {
+            feeEl.textContent = premium > 0
+                ? `STBH: ${formatCurrency(stbhBase)} | Phí: ${formatCurrency(premium)}`
+                : `STBH: ${formatCurrency(stbhBase)} | Phí: —`;
+        }
 
         return premium;
     }
@@ -1702,5 +1730,5 @@ window.MDP3 = (function () {
         return row ? (row[genderKey] || 0) : 0;
     }
 
-    return { init, renderSection, renderSelect, getPremium };
+    return { init, renderSection, renderSelect, getPremium, reset, resetIfEnabled };
 })();
