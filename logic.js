@@ -1535,16 +1535,15 @@ function generateSupplementaryProductsHtml(personId) {
 // TẤT CẢ như trong file ban đầu của bạn.
 
 // Cuối file, ta thêm module MDP3:
-// ===== MODULE MDP3 - PHIÊN BẢN SỬA LỖI HIỂN THỊ =====
+// ===== MODULE MDP3 - PHIÊN BẢN CUỐI CÙNG (SỬA LỖI HIỂN THỊ + GIỮ LOGIC GỐC) =====
 window.MDP3 = (function () {
     let selectedId = null;
 
     function init() {
-        renderSection(); // Chỉ tạo khung ban đầu
+        renderSection();
         attachListeners();
     }
 
-    // Chỉ tạo khung chứa, không tạo checkbox ở đây nữa
     function renderSection() {
         const sec = document.getElementById('mdp3-section');
         if (!sec) return;
@@ -1557,33 +1556,32 @@ window.MDP3 = (function () {
         }
     }
 
-    // Render dropdown danh sách người
+    // Render dropdown danh sách người - GIỮ NGUYÊN LOGIC GỐC CHỈ CÓ NĐBH BỔ SUNG
     function renderSelect() {
         const selectContainer = document.getElementById('mdp3-select-container');
         if (!selectContainer) return;
 
         let html = `<select id="mdp3-person-select" class="form-select w-full mb-3">
-                        <option value="">-- Chọn người được bảo hiểm cho quyền lợi này --</option>`;
+                        <option value="">-- Chọn người --</option>`;
 
-        // Thêm NĐBH chính vào danh sách
-        const mainPersonCont = document.getElementById('main-person-container');
-        if(mainPersonCont) {
-            const info = getCustomerInfo(mainPersonCont, true);
-            let label = info.name || 'NĐBH chính';
-            label += ` (tuổi ${info.age || "?"})`;
-            let disabled = (!info.age || info.age < 18 || info.age > 60) ? 'disabled' : '';
-            if(disabled) label += ' - Không đủ điều kiện';
-            html += `<option value="${mainPersonCont.id}" ${disabled}>${label}</option>`;
-        }
-        
-        // Thêm NĐBH bổ sung
-        document.querySelectorAll('#supplementary-insured-container .person-container').forEach(cont => {
-            const info = getCustomerInfo(cont, false);
-            let label = info.name || 'NĐBH bổ sung';
-            label += ` (tuổi ${info.age || "?"})`;
-            let disabled = (!info.age || info.age < 18 || info.age > 60) ? 'disabled' : '';
-            if(disabled) label += ' - Không đủ điều kiện';
-            html += `<option value="${cont.id}" ${disabled}>${label}</option>`;
+        document.querySelectorAll('.person-container').forEach(cont => {
+            // Chỉ lấy NĐBH Bổ Sung, không lấy NĐBH Chính
+            if (cont.id !== 'main-person-container' && !cont.id.includes('mdp3-other')) {
+                const info = getCustomerInfo(cont, false);
+                let label = info.name || 'NĐBH bổ sung';
+                label += ` (tuổi ${info.age || "?"})`;
+
+                let disabled = '';
+                if (!info.age || info.age <= 0) {
+                    label += ' - Chưa đủ thông tin';
+                    disabled = 'disabled';
+                } else if (info.age < 18 || info.age > 60) {
+                    label += ' - Không đủ điều kiện';
+                    disabled = 'disabled';
+                }
+
+                html += `<option value="${cont.id}" ${disabled}>${label}</option>`;
+            }
         });
 
         html += `<option value="other">Người khác</option></select>
@@ -1592,14 +1590,13 @@ window.MDP3 = (function () {
         selectContainer.innerHTML = html;
     }
 
+    // SỬA LẠI LOGIC ẨN/HIỆN CHO ĐÚNG
     function attachListeners() {
-        // Render lại Section khi đổi sản phẩm chính
         document.getElementById('main-product').addEventListener('change', renderSection);
 
         document.body.addEventListener('change', function (e) {
-            // ===== SỬA ĐỔI QUAN TRỌNG: Logic xử lý ẩn/hiện =====
             if (e.target.id === 'mdp3-enable') {
-                const optionsContainer = document.getElementById('mdp3-options-container');
+                const optionsContainer = document.getElementById('mdp3-options-container'); // Tìm cái hộp lớn chứa tùy chọn
                 if (!optionsContainer) return;
 
                 if (e.target.checked) {
@@ -1614,7 +1611,6 @@ window.MDP3 = (function () {
                     optionsContainer.querySelector('#mdp3-fee-display').textContent = '';
                     selectedId = null; // Quan trọng: reset lựa chọn đã lưu
                 }
-                // Luôn tính toán lại sau khi thay đổi
                 calculateAll();
             }
 
@@ -1635,6 +1631,7 @@ window.MDP3 = (function () {
 
                     const inputs = otherForm.querySelectorAll('.dob-input, .gender-select, .occupation-input');
                     inputs.forEach(input => input.addEventListener('input', calculateAll));
+
                 } else {
                     otherForm.classList.add('hidden');
                     otherForm.innerHTML = '';
@@ -1644,10 +1641,17 @@ window.MDP3 = (function () {
         });
     }
 
+    // ĐẢM BẢO AN TOÀN KHI TÍNH PHÍ
     function getPremium() {
         const checkbox = document.getElementById('mdp3-enable');
-        // Nếu checkbox không được chọn hoặc không có người nào được chọn -> phí bằng 0
+        const feeDisplay = document.getElementById('mdp3-fee-display');
+
+        // Nếu checkbox không được chọn hoặc không có người nào được chọn -> phí bằng 0 và dọn dẹp UI
         if (!checkbox || !checkbox.checked || !selectedId) {
+            if (feeDisplay && checkbox && checkbox.checked) {
+                 // Trường hợp bật checkbox nhưng chưa chọn ai
+                 feeDisplay.textContent = `STBH: — | Phí: —`;
+            }
             return 0;
         }
         
@@ -1669,14 +1673,15 @@ window.MDP3 = (function () {
         }
         
         const personContainer = document.getElementById(personInfoContainerId);
-        if(!personContainer) return 0;
+        if(!personContainer) {
+            if(feeDisplay) feeDisplay.textContent = ``;
+            return 0;
+        }
 
         const info = getCustomerInfo(personContainer, false);
         age = info.age;
         gender = info.gender;
         
-        const feeDisplay = document.getElementById('mdp3-fee-display');
-
         if (!age || age < 18 || age > 60) {
             if(feeDisplay) feeDisplay.textContent = `STBH: ${formatCurrency(stbhBase)} | Người được chọn không hợp lệ.`;
             return 0;
@@ -1695,7 +1700,6 @@ window.MDP3 = (function () {
     }
 
     function findMdp3Rate(age, gender) {
-        // Cần đảm bảo product_data có tồn tại mdp3_rates
         if (!product_data.mdp3_rates) return 0;
         const genderKey = gender === 'Nữ' ? 'nu' : 'nam';
         const row = product_data.mdp3_rates.find(r => age >= r.ageMin && age <= r.ageMax);
